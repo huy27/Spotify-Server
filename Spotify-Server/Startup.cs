@@ -29,6 +29,16 @@ namespace Spotify_Server
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(options =>
+            {
+                options.AddPolicy("spotify",
+                builder =>
+                {
+                    // Not a permanent solution, but just trying to isolate the problem
+                    builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+                });
+            });
+
             services.AddDbContext<SpotifyContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("SpotifyConnection")));
 
@@ -59,6 +69,8 @@ namespace Spotify_Server
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
             });
+
+            app.UseCors("spotify");
 
             app.UseRouting();
 

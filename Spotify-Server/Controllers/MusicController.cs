@@ -27,17 +27,21 @@ namespace Spotify_Server.Controllers
         }
 
         // GET api/<MusicController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+        [HttpGet("{albumId}")]
+        public async Task<ActionResult> Get(int albumId)
         {
-            return "value";
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var songs = await _musicService.GetByAlbumId(albumId);
+            return Ok(songs);
         }
 
         // POST api/<MusicController>
         [HttpPost]
         public async Task<ActionResult> Post([FromBody] CreateSongModel request)
         {
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             var songId = await _musicService.Create(request);

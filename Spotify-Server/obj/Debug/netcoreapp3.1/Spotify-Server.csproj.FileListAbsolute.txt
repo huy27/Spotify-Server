@@ -67,3 +67,16 @@ D:\Code\Spotify-Server\Spotify-Server\bin\Debug\netcoreapp3.1\Swashbuckle.AspNet
 D:\Code\Spotify-Server\Spotify-Server\bin\Debug\netcoreapp3.1\Swashbuckle.AspNetCore.SwaggerGen.dll
 D:\Code\Spotify-Server\Spotify-Server\bin\Debug\netcoreapp3.1\Swashbuckle.AspNetCore.SwaggerUI.dll
 D:\Code\Spotify-Server\Spotify-Server\obj\Debug\netcoreapp3.1\Spotify-Server.MvcApplicationPartsAssemblyInfo.cs
+D:\Code\Spotify-Server\Spotify-Server\bin\Debug\netcoreapp3.1\Microsoft.Win32.SystemEvents.dll
+D:\Code\Spotify-Server\Spotify-Server\bin\Debug\netcoreapp3.1\System.Drawing.Common.dll
+D:\Code\Spotify-Server\Spotify-Server\bin\Debug\netcoreapp3.1\System.Security.AccessControl.dll
+D:\Code\Spotify-Server\Spotify-Server\bin\Debug\netcoreapp3.1\System.Security.Permissions.dll
+D:\Code\Spotify-Server\Spotify-Server\bin\Debug\netcoreapp3.1\System.Security.Principal.Windows.dll
+D:\Code\Spotify-Server\Spotify-Server\bin\Debug\netcoreapp3.1\System.Windows.Extensions.dll
+D:\Code\Spotify-Server\Spotify-Server\bin\Debug\netcoreapp3.1\runtimes\win\lib\netcoreapp3.0\Microsoft.Win32.SystemEvents.dll
+D:\Code\Spotify-Server\Spotify-Server\bin\Debug\netcoreapp3.1\runtimes\unix\lib\netcoreapp3.0\System.Drawing.Common.dll
+D:\Code\Spotify-Server\Spotify-Server\bin\Debug\netcoreapp3.1\runtimes\win\lib\netcoreapp3.0\System.Drawing.Common.dll
+D:\Code\Spotify-Server\Spotify-Server\bin\Debug\netcoreapp3.1\runtimes\win\lib\netcoreapp2.0\System.Security.AccessControl.dll
+D:\Code\Spotify-Server\Spotify-Server\bin\Debug\netcoreapp3.1\runtimes\unix\lib\netcoreapp2.1\System.Security.Principal.Windows.dll
+D:\Code\Spotify-Server\Spotify-Server\bin\Debug\netcoreapp3.1\runtimes\win\lib\netcoreapp2.1\System.Security.Principal.Windows.dll
+D:\Code\Spotify-Server\Spotify-Server\bin\Debug\netcoreapp3.1\runtimes\win\lib\netcoreapp3.0\System.Windows.Extensions.dll

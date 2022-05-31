@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.Extensions.Configuration;
 
 // Code scaffolded by EF Core assumes nullable reference types (NRTs) are not used or disabled.
 // If you have enabled NRTs for your project, then un-comment the following line:
@@ -10,13 +11,15 @@ namespace Data.Entities
 {
     public partial class SpotifyContext : DbContext
     {
+        private readonly IConfiguration _configuration;
         public SpotifyContext()
         {
         }
 
-        public SpotifyContext(DbContextOptions<SpotifyContext> options)
+        public SpotifyContext(DbContextOptions<SpotifyContext> options, IConfiguration configuration)
             : base(options)
         {
+            _configuration = configuration;
         }
 
         public virtual DbSet<Album> Album { get; set; }
@@ -27,7 +30,7 @@ namespace Data.Entities
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-                optionsBuilder.UseSqlServer("Server=HUY;Database=Spotify;User Id=sa;Password=sa123456789");
+                optionsBuilder.UseSqlServer(_configuration.GetConnectionString("SpotifyConnection"));
             }
         }
 

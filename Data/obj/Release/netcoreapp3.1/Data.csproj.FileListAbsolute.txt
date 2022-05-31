@@ -1,0 +1,13 @@
+D:\Code\Spotify-Server\Data\bin\Release\netcoreapp3.1\Data.deps.json
+D:\Code\Spotify-Server\Data\bin\Release\netcoreapp3.1\Data.runtimeconfig.json
+D:\Code\Spotify-Server\Data\bin\Release\netcoreapp3.1\Data.runtimeconfig.dev.json
+D:\Code\Spotify-Server\Data\bin\Release\netcoreapp3.1\Data.dll
+D:\Code\Spotify-Server\Data\bin\Release\netcoreapp3.1\Data.pdb
+D:\Code\Spotify-Server\Data\obj\Release\netcoreapp3.1\Data.csproj.AssemblyReference.cache
+D:\Code\Spotify-Server\Data\obj\Release\netcoreapp3.1\Data.GeneratedMSBuildEditorConfig.editorconfig
+D:\Code\Spotify-Server\Data\obj\Release\netcoreapp3.1\Data.AssemblyInfoInputs.cache
+D:\Code\Spotify-Server\Data\obj\Release\netcoreapp3.1\Data.AssemblyInfo.cs
+D:\Code\Spotify-Server\Data\obj\Release\netcoreapp3.1\Data.csproj.CoreCompileInputs.cache
+D:\Code\Spotify-Server\Data\obj\Release\netcoreapp3.1\Data.dll
+D:\Code\Spotify-Server\Data\obj\Release\netcoreapp3.1\Data.pdb
+D:\Code\Spotify-Server\Data\obj\Release\netcoreapp3.1\Data.genruntimeconfig.cache
