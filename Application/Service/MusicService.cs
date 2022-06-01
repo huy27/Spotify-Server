@@ -39,19 +39,37 @@ namespace Application.Service
             return song.Id;
         }
 
+        public async Task<List<SongModel>> FindByName(string name)
+        {
+            var songs = await _context.Song.Where(x => x.Name.Contains(name) && x.IsActive)
+                .Select(x => new SongModel
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    Image = x.Image,
+                    Author = x.Author,
+                    Lyric = x.Lyric,
+                    Url = x.Url,
+                    AlbumId = x.AlbumId,
+                    CreateDate = x.CreateDate
+                }).ToListAsync();
+            return songs;
+        }
+
         public async Task<List<SongModel>> Get()
         {
-            var songs = await _context.Song.Where(x => x.IsActive).Select(x => new SongModel
-            {
-                Id = x.Id,
-                Name = x.Name,
-                Image = x.Image,
-                Author = x.Author,
-                Lyric = x.Lyric,
-                Url = x.Url,
-                AlbumId = x.AlbumId,
-                CreateDate = x.CreateDate
-            }).ToListAsync();
+            var songs = await _context.Song.Where(x => x.IsActive)
+                .Select(x => new SongModel
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    Image = x.Image,
+                    Author = x.Author,
+                    Lyric = x.Lyric,
+                    Url = x.Url,
+                    AlbumId = x.AlbumId,
+                    CreateDate = x.CreateDate
+                }).ToListAsync();
             return songs;
         }
 
@@ -70,6 +88,18 @@ namespace Application.Service
                     Url = x.Url,
                 }).ToListAsync();
             return songs;
+        }
+
+        public async Task<int> UpdateStatus(int id, bool isActive)
+        {
+            var song = await _context.Song.FirstOrDefaultAsync(x => x.Id == id);
+            if (song == null)
+                return -1;
+
+            song.IsActive = isActive;
+            _context.Update(song);
+            var result = await _context.SaveChangesAsync();
+            return result;
         }
     }
 }

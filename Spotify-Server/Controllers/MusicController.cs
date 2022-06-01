@@ -18,7 +18,6 @@ namespace Spotify_Server.Controllers
             _musicService = musicService;
         }
 
-        // GET: api/<MusicController>
         [HttpGet]
         public async Task<ActionResult> Get()
         {
@@ -26,7 +25,6 @@ namespace Spotify_Server.Controllers
             return Ok(songs);
         }
 
-        // GET api/<MusicController>/5
         [HttpGet("{albumId}")]
         public async Task<ActionResult> Get(int albumId)
         {
@@ -37,9 +35,8 @@ namespace Spotify_Server.Controllers
             return Ok(songs);
         }
 
-        // POST api/<MusicController>
-        [HttpPost]
-        public async Task<ActionResult> Post([FromBody] CreateSongModel request)
+        [HttpPost("Create")]
+        public async Task<ActionResult> Create([FromBody] CreateSongModel request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -48,16 +45,28 @@ namespace Spotify_Server.Controllers
             return StatusCode(201, $"songId: {songId} in albumId: {request.AlbumId}");
         }
 
-        // PUT api/<MusicController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpPost("UpdateStatus")]
+        public async Task<ActionResult> UpdateStatus(int id, bool isActive)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _musicService.UpdateStatus(id, isActive);
+
+            if(result < 1)
+                return BadRequest($"Update id: {id} is not success");
+            return Ok($"Status id: {id} to {isActive}");
         }
 
-        // DELETE api/<MusicController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        [HttpGet("SearchByName")]
+        public async Task<ActionResult> SearchByName(string name)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var songs = await _musicService.FindByName(name);
+            return Ok(songs);
         }
+            
     }
 }
