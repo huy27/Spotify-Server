@@ -18,13 +18,16 @@ namespace Spotify_Server.Controllers
             _musicService = musicService;
         }
 
+        #region Get
         [HttpGet]
         public async Task<ActionResult> Get()
         {
             var songs = await _musicService.Get();
             return Ok(songs);
         }
+        #endregion
 
+        #region GetByAlbumId
         [HttpGet("{albumId}")]
         public async Task<ActionResult> Get(int albumId)
         {
@@ -34,39 +37,64 @@ namespace Spotify_Server.Controllers
             var songs = await _musicService.GetByAlbumId(albumId);
             return Ok(songs);
         }
+        #endregion
 
-        [HttpPost("Create")]
-        public async Task<ActionResult> Create([FromBody] CreateSongModel request)
+        #region SearchByCondition
+        [HttpGet("SearchByCondition")]
+        public async Task<ActionResult> SearchByCondition(string name)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var songId = await _musicService.Create(request);
-            return StatusCode(201, $"songId: {songId} in albumId: {request.AlbumId}");
+            var songs = await _musicService.GetByCondition(name);
+            return Ok(songs);
         }
+        #endregion
 
+        #region Create
+        [HttpPost("Create")]
+        public async Task<ActionResult> Create(int albumId, [FromBody] CreateSongModel request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _musicService.Create(albumId, request);
+            if (result < 0)
+                return BadRequest($"AlbumId {albumId} is not exists");
+
+            return StatusCode(201, $"songId: {result} in albumId: {albumId}");
+        }
+        #endregion
+
+        #region UpdateStatus
         [HttpPost("UpdateStatus")]
         public async Task<ActionResult> UpdateStatus(int id, bool isActive)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _musicService.UpdateStatus(id, isActive);
+            var result = await _musicService.Update(id, isActive);
 
-            if(result < 1)
+            if (result < 1)
                 return BadRequest($"Update id: {id} is not success");
             return Ok($"Status id: {id} to {isActive}");
         }
+        #endregion
 
-        [HttpGet("SearchByName")]
-        public async Task<ActionResult> SearchByName(string name)
+        #region Update
+        [HttpPost("Update")]
+        public async Task<ActionResult> Update(int id, int albumId, UpdateSongModel request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var songs = await _musicService.FindByName(name);
-            return Ok(songs);
+            var result = await _musicService.Update(id, albumId, request);
+            if (result < 1)
+                return BadRequest($"Update id: {id} is not success");
+            return Ok($"Status id: {id} to success");
         }
-            
+        #endregion
+
+        
     }
 }

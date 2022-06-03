@@ -18,7 +18,6 @@ namespace Spotify_Server.Controllers
             _albumService = albumService;
         }
 
-        // GET: api/<AlbumController>
         [HttpGet]
         public async Task<ActionResult> Get()
         {
@@ -26,15 +25,13 @@ namespace Spotify_Server.Controllers
             return Ok(albums);
         }
 
-        // GET api/<AlbumController>/5
         [HttpGet("{id}")]
         public string Get(int id)
         {
             return "value";
         }
 
-        // POST api/<AlbumController>
-        [HttpPost]
+        [HttpPost("Create")]
         public async Task<ActionResult> Post([FromBody] CreateAlbumModel request)
         {
             if(!ModelState.IsValid)
@@ -44,16 +41,30 @@ namespace Spotify_Server.Controllers
             return StatusCode(201, $"albumId: {albumId}");
         }
 
-        // PUT api/<AlbumController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpPost("Update")]
+        public async Task<ActionResult> Update(int id, [FromBody] UpdateAlbumModel request)
         {
+            if(!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _albumService.Update(id, request);
+            if (result < 1)
+                return BadRequest($"Update albumId: {id} is not success");
+
+            return Ok($"Update albumId: {id} is success");
         }
 
-        // DELETE api/<AlbumController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        [HttpPost("UpdateStatus")]
+        public async Task<ActionResult> UpdateStatus(int id, bool isActive)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _albumService.Update(id, isActive);
+            if (result < 1)
+                return BadRequest($"Update status albumId: {id} is not success");
+
+            return Ok($"Update status albumId: {id} to {isActive} is success");
         }
     }
 }

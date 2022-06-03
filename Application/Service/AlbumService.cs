@@ -50,5 +50,31 @@ namespace Application.Service
             ).ToListAsync();
             return albums;
         }
+
+        public async Task<int> Update(int id, UpdateAlbumModel request)
+        {
+            var album = await _context.Album.FirstOrDefaultAsync(x => x.Id == id);
+            if (album == null)
+                return -1;
+
+            album.Name = request.Name;
+            album.Description = request.Description;
+            album.BackgroundImageUrl = request.BackgroundImageUrl;
+
+            _context.Album.Update(album);
+            return await _context.SaveChangesAsync();
+        }
+
+        public async Task<int> Update(int id, bool isActive)
+        {
+            var album = await _context.Album.FirstOrDefaultAsync(x => x.Id == id);
+            if (album == null)
+                return -1;
+
+            album.IsActive = isActive;
+
+            _context.Album.Update(album);
+            return await _context.SaveChangesAsync();
+        }
     }
 }

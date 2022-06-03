@@ -20,11 +20,15 @@ namespace Application.Service
             _context = context;
         }
 
-        public async Task<int> Create(CreateSongModel request)
+        public async Task<int> Create(int albumId, CreateSongModel request)
         {
+            var album = await _context.Album.FirstOrDefaultAsync(x => x.Id == albumId && x.IsActive);
+            if (album == null)
+                return -1;
+
             var song = new Song
             {
-                AlbumId = request.AlbumId,
+                AlbumId = albumId,
                 Name = request.Name,
                 Author = request.Author,
                 Image = request.Image,
@@ -39,9 +43,12 @@ namespace Application.Service
             return song.Id;
         }
 
-        public async Task<List<SongModel>> FindByName(string name)
+        public async Task<List<SongModel>> GetByCondition(string name)
         {
-            var songs = await _context.Song.Where(x => x.Name.Contains(name) && x.IsActive)
+            var songs = await _context.Song.Where(x => x.Name.Contains(name) 
+                                                || x.Author.Contains(name) 
+                                                && x.IsActive 
+                                                && x.Album.IsActive)
                 .Select(x => new SongModel
                 {
                     Id = x.Id,
@@ -52,13 +59,13 @@ namespace Application.Service
                     Url = x.Url,
                     AlbumId = x.AlbumId,
                     CreateDate = x.CreateDate
-                }).ToListAsync();
+                }).OrderBy(x => x.CreateDate).ToListAsync();
             return songs;
         }
 
         public async Task<List<SongModel>> Get()
         {
-            var songs = await _context.Song.Where(x => x.IsActive)
+            var songs = await _context.Song.Where(x => x.IsActive && x.Album.IsActive)
                 .Select(x => new SongModel
                 {
                     Id = x.Id,
@@ -69,13 +76,13 @@ namespace Application.Service
                     Url = x.Url,
                     AlbumId = x.AlbumId,
                     CreateDate = x.CreateDate
-                }).ToListAsync();
+                }).OrderBy(x => x.CreateDate).ToListAsync();
             return songs;
         }
 
         public async Task<List<SongModel>> GetByAlbumId(int albumId)
         {
-            var songs = await _context.Song.Where(x => x.AlbumId == albumId && x.IsActive)
+            var songs = await _context.Song.Where(x => x.AlbumId == albumId && x.IsActive && x.Album.IsActive)
                 .Select(x => new SongModel
                 {
                     AlbumId = x.AlbumId,
@@ -90,14 +97,32 @@ namespace Application.Service
             return songs;
         }
 
-        public async Task<int> UpdateStatus(int id, bool isActive)
+        public async Task<int> Update(int id, int albumId, UpdateSongModel request)
         {
-            var song = await _context.Song.FirstOrDefaultAsync(x => x.Id == id);
+            var song = await _context.Song.FirstOrDefaultAsync(x => x.Id == id && x.IsActive && x.Album.IsActive);
+            if (song == null)
+                return -1;
+
+            song.AlbumId = albumId;
+            song.Name = request.Name;
+            song.Author = request.Author;
+            song.Url = request.Url;
+            song.Image = request.Image;
+            song.Lyric = request.Lyric;
+            song.IsActive = request.IsActive;
+
+            _context.Song.Update(song);
+            return await _context.SaveChangesAsync();
+        }
+
+        public async Task<int> Update(int id, bool isActive)
+        {
+            var song = await _context.Song.FirstOrDefaultAsync(x => x.Id == id && x.Album.IsActive);
             if (song == null)
                 return -1;
 
             song.IsActive = isActive;
-            _context.Update(song);
+            _context.Song.Update(song);
             var result = await _context.SaveChangesAsync();
             return result;
         }
