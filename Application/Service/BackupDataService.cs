@@ -13,11 +13,14 @@ namespace Application.Service
     public class BackupDataService : IBackupDataService
     {
         private readonly SpotifyContext _context;
+        private readonly IMailService _mailService;
 
-        public BackupDataService(SpotifyContext context)
+        public BackupDataService(SpotifyContext context, IMailService mailService)
         {
             _context = context;
+            _mailService = mailService;
         }
+
         public void Backup()
         {
             var songs = _context.Song.Select(x => new SongModel
@@ -41,17 +44,19 @@ namespace Application.Service
                 Description = x.Description
             }).OrderBy(x => x.CreatedAt).ToList();
 
-            File.SaveFile(JsonConvert.SerializeObject(songs, Formatting.Indented,
+            FileService.SaveFile(JsonConvert.SerializeObject(songs, Formatting.Indented,
                 new JsonSerializerSettings
                 {
                     ReferenceLoopHandling = ReferenceLoopHandling.Ignore
                 }), "Music");
 
-            File.SaveFile(JsonConvert.SerializeObject(albums, Formatting.Indented,
+            FileService.SaveFile(JsonConvert.SerializeObject(albums, Formatting.Indented,
                 new JsonSerializerSettings
                 {
                     ReferenceLoopHandling = ReferenceLoopHandling.Ignore
                 }), "Album");
+
+            _mailService.SendMail("huy27297@gmail.com", "Backup data success");
         }
     }
 }

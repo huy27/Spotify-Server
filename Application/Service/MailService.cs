@@ -1,4 +1,5 @@
 ﻿using Application.IService;
+using Application.Ultilities;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -18,7 +19,7 @@ namespace Application.Service
             _configuration = configuration;
         }
 
-        public async void SendMail(string toEmail, string bodyRequest)
+        public void SendMail(string toEmail, string bodyRequest)
         {
             try
             {
@@ -32,9 +33,15 @@ namespace Application.Service
                 MailMessage message = new MailMessage();
                 message.From = new MailAddress(fromEmailAddress, fromEmailDisplayName);
                 message.To.Add(new MailAddress(toEmail));
-                message.Subject = "Thank You For Your Registration";
+                message.Subject = "Notification";
                 message.IsBodyHtml = true;
                 message.Body = body;
+
+                Attachment attachment1, attachment2;
+                attachment1 = new System.Net.Mail.Attachment(FileService.GetUrl("Music"));
+                attachment2 = new System.Net.Mail.Attachment(FileService.GetUrl("Album"));
+                message.Attachments.Add(attachment1);
+                message.Attachments.Add(attachment2);
 
                 var client = new SmtpClient();
                 client.Credentials = new NetworkCredential(fromEmailAddress, fromEmailPassword);

@@ -89,7 +89,7 @@ namespace Spotify_Server
             });
 
             app.UseHangfireDashboard();
-            RecurringJob.AddOrUpdate<IBackupDataService>("BackupData", x => x.Backup(), "* * * * *");
+            RecurringJob.AddOrUpdate<IBackupDataService>("BackupData", x => x.Backup(), "0 0 * * *");
 
             app.UseCors("spotify");
 

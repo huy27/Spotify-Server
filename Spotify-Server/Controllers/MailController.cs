@@ -19,7 +19,7 @@ namespace Spotify_Server.Controllers
         [HttpPost]
         public ActionResult Get(string toEmail, string message)
         {
-            //_mailService.SendMail(toEmail, message);
+            _mailService.SendMail(toEmail, message);
             return Ok();
         }
 
