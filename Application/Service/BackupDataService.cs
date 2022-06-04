@@ -1,0 +1,57 @@
+﻿using Application.IService;
+using Application.Ultilities;
+using Data.Entities;
+using Data.Models;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace Application.Service
+{
+    public class BackupDataService : IBackupDataService
+    {
+        private readonly SpotifyContext _context;
+
+        public BackupDataService(SpotifyContext context)
+        {
+            _context = context;
+        }
+        public void Backup()
+        {
+            var songs = _context.Song.Select(x => new SongModel
+            {
+                Id = x.Id,
+                Name = x.Name,
+                Image = x.Image,
+                Author = x.Author,
+                Lyric = x.Lyric,
+                Url = x.Url,
+                AlbumId = x.AlbumId,
+                CreateDate = x.CreateDate
+            }).OrderBy(x => x.CreateDate).ToList();
+
+            var albums = _context.Album.Select(x => new AlbumModel
+            {
+                Id = x.Id,
+                Name = x.Name,
+                BackgroundImageUrl = x.BackgroundImageUrl,
+                CreatedAt = x.CreatedAt.ToString(),
+                Description = x.Description
+            }).OrderBy(x => x.CreatedAt).ToList();
+
+            File.SaveFile(JsonConvert.SerializeObject(songs, Formatting.Indented,
+                new JsonSerializerSettings
+                {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                }), "Music");
+
+            File.SaveFile(JsonConvert.SerializeObject(albums, Formatting.Indented,
+                new JsonSerializerSettings
+                {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                }), "Album");
+        }
+    }
+}

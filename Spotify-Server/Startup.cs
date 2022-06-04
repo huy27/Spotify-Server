@@ -1,6 +1,8 @@
 using Application.IService;
 using Application.Service;
 using Data.Entities;
+using Hangfire;
+using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -29,6 +31,19 @@ namespace Spotify_Server
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddHangfire(configuration => configuration
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseSqlServerStorage(Configuration.GetConnectionString("SpotifyConnection"), new SqlServerStorageOptions
+                {
+                    CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+                    SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+                    QueuePollInterval = TimeSpan.Zero,
+                    UseRecommendedIsolationLevel = true,
+                    DisableGlobalLocks = true
+                }));
+
             services.AddCors(options =>
             {
                 options.AddPolicy("spotify",
@@ -44,7 +59,10 @@ namespace Spotify_Server
 
             services.AddTransient<IMusicService, MusicService>();
             services.AddTransient<IAlbumService, AlbumService>();
+            services.AddTransient<IMailService, MailService>();
+            services.AddTransient<IBackupDataService, BackupDataService>();
 
+            services.AddHangfireServer();
             services.AddControllers();
 
             services.AddSwaggerGen();
@@ -70,6 +88,9 @@ namespace Spotify_Server
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
             });
 
+            app.UseHangfireDashboard();
+            RecurringJob.AddOrUpdate<IBackupDataService>("BackupData", x => x.Backup(), "* * * * *");
+
             app.UseCors("spotify");
 
             app.UseRouting();
@@ -79,6 +100,7 @@ namespace Spotify_Server
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHangfireDashboard();
             });
         }
     }
