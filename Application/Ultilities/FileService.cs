@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using Application.IService;
 using Data.Entities;
 
@@ -9,15 +10,23 @@ namespace Application.Ultilities
 {
     public static class FileService
     {
-        public static void SaveFile(string jsonData, string filename)
+        public static async Task SaveFile(string jsonData, string filename)
         {
-            var _userContentFolder = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\user-content", $"{filename}.json");
-            System.IO.File.WriteAllText(_userContentFolder, jsonData);
+            try
+            {
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\user-content", $"{filename}");
+                await File.WriteAllTextAsync(filePath, jsonData);
+                
+            }
+            catch (Exception ex)
+            {
+
+            }
         }
 
         public static string GetUrl(string filename)
         {
-            var _userContentFolder = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\user-content", $"{filename}.json");
+            var _userContentFolder = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\user-content", $"{filename}");
             return _userContentFolder;
         }
     }

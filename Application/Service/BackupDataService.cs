@@ -2,11 +2,13 @@
 using Application.Ultilities;
 using Data.Entities;
 using Data.Models;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Application.Service
 {
@@ -21,9 +23,9 @@ namespace Application.Service
             _mailService = mailService;
         }
 
-        public void Backup()
+        public async Task Backup()
         {
-            var songs = _context.Song.Select(x => new SongModel
+            var songs = await _context.Song.Select(x => new SongModel
             {
                 Id = x.Id,
                 Name = x.Name,
@@ -33,28 +35,28 @@ namespace Application.Service
                 Url = x.Url,
                 AlbumId = x.AlbumId,
                 CreateDate = x.CreateDate
-            }).OrderBy(x => x.CreateDate).ToList();
+            }).OrderByDescending(x => x.CreateDate).ToListAsync();
 
-            var albums = _context.Album.Select(x => new AlbumModel
+            var albums = await _context.Album.Select(x => new AlbumModel
             {
                 Id = x.Id,
                 Name = x.Name,
                 BackgroundImageUrl = x.BackgroundImageUrl,
                 CreatedAt = x.CreatedAt.ToString(),
                 Description = x.Description
-            }).OrderBy(x => x.CreatedAt).ToList();
+            }).OrderByDescending(x => x.CreatedAt).ToListAsync();
 
-            FileService.SaveFile(JsonConvert.SerializeObject(songs, Formatting.Indented,
+            await FileService.SaveFile(JsonConvert.SerializeObject(songs, Formatting.Indented,
                 new JsonSerializerSettings
                 {
                     ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-                }), "Music");
+                }), "Music.json");
 
-            FileService.SaveFile(JsonConvert.SerializeObject(albums, Formatting.Indented,
+            await FileService.SaveFile(JsonConvert.SerializeObject(albums, Formatting.Indented,
                 new JsonSerializerSettings
                 {
                     ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-                }), "Album");
+                }), "Album.json");
 
             _mailService.SendMail("huy27297@gmail.com", "Backup data success");
         }

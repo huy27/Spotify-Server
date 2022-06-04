@@ -24,6 +24,7 @@ namespace Application.Service
             try
             {
                 var fromEmailAddress = _configuration["FromEmailAddress"].ToString();
+                var ccEmailAddress = _configuration["CCEmailAddress"].ToString();
                 var fromEmailDisplayName = _configuration["FromEmailDisplayName"].ToString();
                 var fromEmailPassword = _configuration["FromEmailPassword"].ToString();
                 var smtpHost = _configuration["SMTPHost"].ToString();
@@ -33,15 +34,18 @@ namespace Application.Service
                 MailMessage message = new MailMessage();
                 message.From = new MailAddress(fromEmailAddress, fromEmailDisplayName);
                 message.To.Add(new MailAddress(toEmail));
+                message.CC.Add(new MailAddress(ccEmailAddress));
                 message.Subject = "Notification";
                 message.IsBodyHtml = true;
                 message.Body = body;
 
+
                 Attachment attachment1, attachment2;
-                attachment1 = new System.Net.Mail.Attachment(FileService.GetUrl("Music"));
-                attachment2 = new System.Net.Mail.Attachment(FileService.GetUrl("Album"));
+                attachment1 = new System.Net.Mail.Attachment(FileService.GetUrl("Music.json"));
+                attachment2 = new System.Net.Mail.Attachment(FileService.GetUrl("Album.json"));
                 message.Attachments.Add(attachment1);
                 message.Attachments.Add(attachment2);
+                
 
                 var client = new SmtpClient();
                 client.Credentials = new NetworkCredential(fromEmailAddress, fromEmailPassword);
@@ -49,6 +53,8 @@ namespace Application.Service
                 client.EnableSsl = true;
                 client.Port = int.Parse(smtpPort);
                 client.Send(message);
+                attachment1.Dispose();
+                attachment2.Dispose();
             }
             catch (Exception ex)
             {
