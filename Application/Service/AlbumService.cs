@@ -1,4 +1,5 @@
 ﻿using Application.IService;
+using Application.Ultilities;
 using Data.Entities;
 using Data.Models;
 using Data.Models.Album;
@@ -45,7 +46,7 @@ namespace Application.Service
                     Name = x.Name,
                     Description = x.Description,
                     BackgroundImageUrl = x.BackgroundImageUrl,
-                    CreatedAt = x.CreatedAt.ToString(),
+                    CreatedAt = TimeUltility.CalculateRelativeTime(x.CreatedAt),
                 }
             ).ToListAsync();
             return albums;
