@@ -2,6 +2,7 @@ using Application.IService;
 using Application.Service;
 using Data.Entities;
 using Hangfire;
+using Hangfire.Dashboard;
 using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -88,8 +89,15 @@ namespace Spotify_Server
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
             });
 
-            app.UseHangfireDashboard();
-            RecurringJob.AddOrUpdate<IBackupDataService>("BackupData", x => x.Backup(), "0 0 * * *");
+            app.UseHangfireDashboard("/hangfire", new DashboardOptions
+            {
+                DashboardTitle = "Jobs",
+                Authorization = new[]
+            {
+                new  HangfireAuthorizationFilter("admin")
+            }
+            });
+            RecurringJob.AddOrUpdate<IBackupDataService>("BackupData", x => x.Backup(), "0 9 * * *", TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
 
             app.UseCors("spotify");
 
@@ -102,6 +110,25 @@ namespace Spotify_Server
                 endpoints.MapControllers();
                 endpoints.MapHangfireDashboard();
             });
+        }
+    }
+
+    public class HangfireAuthorizationFilter : IDashboardAuthorizationFilter
+    {
+        private readonly string[] _roles;
+
+        public HangfireAuthorizationFilter(params string[] roles)
+        {
+            _roles = roles;
+        }
+
+        public bool Authorize(DashboardContext context)
+        {
+            var httpContext = ((AspNetCoreDashboardContext)context).HttpContext;
+
+            //Your authorization logic goes here.
+
+            return true; //I'am returning true for simplicity
         }
     }
 }
