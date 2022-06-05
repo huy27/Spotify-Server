@@ -19,7 +19,17 @@ namespace Application.Service
             _configuration = configuration;
         }
 
-        public void SendMail(string toEmail, string bodyRequest)
+        public void SendMail(string toEmail, string bodyRequest, string subject, List<string> filePaths)
+        {
+            SendMailUltilities(toEmail, bodyRequest, subject, filePaths);
+        }
+
+        public void SendMail(string toEmail, string bodyRequest, string subject)
+        {
+            SendMailUltilities(toEmail, bodyRequest, subject, new List<string>());
+        }
+
+        private void SendMailUltilities(string toEmail, string bodyRequest, string subject, List<string> filePaths)
         {
             try
             {
@@ -31,34 +41,31 @@ namespace Application.Service
                 var smtpPort = _configuration["SMTPPort"].ToString();
 
                 string body = bodyRequest;
-                MailMessage message = new MailMessage();
-                message.From = new MailAddress(fromEmailAddress, fromEmailDisplayName);
-                message.To.Add(new MailAddress(toEmail));
-                message.CC.Add(new MailAddress(ccEmailAddress));
-                message.Subject = "Notification";
-                message.IsBodyHtml = true;
-                message.Body = body;
+                using (MailMessage message = new MailMessage())
+                {
+                    message.From = new MailAddress(fromEmailAddress, fromEmailDisplayName);
+                    message.To.Add(new MailAddress(toEmail));
+                    message.CC.Add(new MailAddress(ccEmailAddress));
+                    message.Subject = subject;
+                    message.IsBodyHtml = true;
+                    message.Body = body;
 
+                    foreach (var filePath in filePaths)
+                    {
+                        message.Attachments.Add(new Attachment(filePath));
+                    }
 
-                Attachment attachment1, attachment2;
-                attachment1 = new System.Net.Mail.Attachment(FileService.GetUrl("Music.json"));
-                attachment2 = new System.Net.Mail.Attachment(FileService.GetUrl("Album.json"));
-                message.Attachments.Add(attachment1);
-                message.Attachments.Add(attachment2);
-                
-
-                var client = new SmtpClient();
-                client.Credentials = new NetworkCredential(fromEmailAddress, fromEmailPassword);
-                client.Host = smtpHost;
-                client.EnableSsl = true;
-                client.Port = int.Parse(smtpPort);
-                client.Send(message);
-                attachment1.Dispose();
-                attachment2.Dispose();
+                    var client = new SmtpClient();
+                    client.Credentials = new NetworkCredential(fromEmailAddress, fromEmailPassword);
+                    client.Host = smtpHost;
+                    client.EnableSsl = true;
+                    client.Port = int.Parse(smtpPort);
+                    client.Send(message);
+                }
             }
             catch (Exception ex)
             {
-                
+
             }
         }
     }

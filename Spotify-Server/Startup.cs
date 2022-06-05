@@ -97,7 +97,7 @@ namespace Spotify_Server
                 new  HangfireAuthorizationFilter("admin")
             }
             });
-            RecurringJob.AddOrUpdate<IBackupDataService>("BackupData", x => x.Backup(), "0 9 * * *", TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
+            RecurringJob.AddOrUpdate<IBackupDataService>("BackupData", x => x.Backup(), "40 3 * * *", TimeZoneInfo.FindSystemTimeZoneById(Configuration["Timezone"]));
 
             app.UseCors("spotify");
 

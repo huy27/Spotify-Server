@@ -17,9 +17,12 @@ namespace Spotify_Server.Controllers
         }
 
         [HttpPost]
-        public ActionResult Get(string toEmail, string message)
+        public ActionResult SendMail(string toEmail, string message, string subject)
         {
-            _mailService.SendMail(toEmail, message);
+            if(!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            _mailService.SendMail(toEmail, message, subject);
             return Ok();
         }
 
