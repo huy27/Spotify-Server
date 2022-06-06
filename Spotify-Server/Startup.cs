@@ -1,5 +1,6 @@
 using Application.IService;
 using Application.Service;
+using Application.Ultilities;
 using Data.Entities;
 using Hangfire;
 using Hangfire.Dashboard;
@@ -97,7 +98,9 @@ namespace Spotify_Server
                 new  HangfireAuthorizationFilter("admin")
             }
             });
-            RecurringJob.AddOrUpdate<IBackupDataService>("BackupData", x => x.Backup(), "55 15 * * *", TimeZoneInfo.FindSystemTimeZoneById(Configuration["Timezone"]));
+            RecurringJob.AddOrUpdate<IBackupDataService>("BackupData1", x => x.Backup(), "00 22 * * *", TimeZoneInfo.FindSystemTimeZoneById(Configuration["Timezone"]));
+            RecurringJob.AddOrUpdate<IBackupDataService>("BackupData2", x => x.Backup(), "00 9 * * *", TimeZoneInfo.FindSystemTimeZoneById(Configuration["Timezone"]));
+            RecurringJob.AddOrUpdate("PingServer", () => Pinger.Ping(), "*/5 * * * *");
 
             app.UseCors("spotify");
 
