@@ -55,8 +55,11 @@ namespace Application.Service
                 Description = x.Description
             }).OrderByDescending(x => x.Id).ToListAsync();
 
-            await FileService.SaveCsvFile<AlbumModel>(albums, $"Album-{dateBackup}.csv", TypeCsvFile.Album);
-            await FileService.SaveCsvFile<SongModel>(songs, $"Music-{dateBackup}.csv", TypeCsvFile.Music);
+            FileService.SavePdfFile<AlbumModel>(albums, $"Album-{dateBackup}", EnumFile.Album);
+            FileService.SavePdfFile<SongModel>(songs, $"Music-{dateBackup}", EnumFile.Music);
+
+            await FileService.SaveCsvFile<AlbumModel>(albums, $"Album-{dateBackup}.csv", EnumFile.Album);
+            await FileService.SaveCsvFile<SongModel>(songs, $"Music-{dateBackup}.csv", EnumFile.Music);
 
             await FileService.SaveFile(JsonConvert.SerializeObject(songs, Formatting.Indented,
                 new JsonSerializerSettings
@@ -75,7 +78,9 @@ namespace Application.Service
                 FileService.GetUrl($"Music-{dateBackup}.json"),
                 FileService.GetUrl($"Album-{dateBackup}.json"),
                 FileService.GetUrl($"Music-{dateBackup}.csv"),
-                FileService.GetUrl($"Album-{dateBackup}.csv")
+                FileService.GetUrl($"Album-{dateBackup}.csv"),
+                FileService.GetUrl($"Music-{dateBackup}.pdf"),
+                FileService.GetUrl($"Album-{dateBackup}.pdf")
             };
             _mailService.SendMail("huy27297@gmail.com",
                 $"Backup data of date : {dateBackup} is success",
