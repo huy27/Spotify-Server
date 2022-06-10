@@ -5,8 +5,9 @@ using System.Threading.Tasks;
 
 namespace Application.IService
 {
-    public interface IDatabaseHangfireService
+    public interface IHangfireService
     {
-        Task Truncate();
+        Task TruncateDB();
+        void DeleteOldFile();
     }
 }

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Data.Enums
 {
-    public enum TypeCsvFile
+    public enum EnumFile
     {
         Album,
         Music

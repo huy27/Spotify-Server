@@ -2,7 +2,8 @@
 using Application.Ultilities;
 using Data.Models.Song;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
+using Microsoft.Extensions.Configuration;
+using System;
 using System.Threading.Tasks;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -14,10 +15,12 @@ namespace Spotify_Server.Controllers
     public class MusicController : ControllerBase
     {
         private readonly IMusicService _musicService;
+        private readonly IConfiguration _configuration;
 
-        public MusicController(IMusicService musicService)
+        public MusicController(IMusicService musicService, IConfiguration configuration)
         {
             _musicService = musicService;
+            _configuration = configuration;
         }
 
         #region Get
@@ -50,6 +53,25 @@ namespace Spotify_Server.Controllers
 
             var songs = await _musicService.GetByCondition(name);
             return Ok(songs);
+        }
+        #endregion
+
+        #region ExportCSV
+        [HttpGet("ExportCSV")]
+        public ActionResult ExportCSV()
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var dateBackup = TimeZoneInfo.ConvertTimeFromUtc(
+                                            DateTime.UtcNow,
+                                            TimeZoneInfo.FindSystemTimeZoneById(_configuration["Timezone"])
+                                            ).ToString("dd-MM-yyyy");
+            var filePath = FileService.GetUrl($"Music-{dateBackup}.csv");
+            if (string.IsNullOrEmpty(filePath))
+                return NoContent();
+
+            return Ok(filePath);
         }
         #endregion
 
@@ -97,6 +119,5 @@ namespace Spotify_Server.Controllers
         }
         #endregion
 
-        
     }
 }

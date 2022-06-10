@@ -25,5 +25,9 @@
     <Folder Include="wwwroot\user-content\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="wwwroot\Scripts\ClearDataHangfire.sql" />
+  </ItemGroup>
+
 
 </Project>
