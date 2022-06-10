@@ -63,7 +63,7 @@ namespace Spotify_Server
             services.AddTransient<IAlbumService, AlbumService>();
             services.AddTransient<IMailService, MailService>();
             services.AddTransient<IBackupDataService, BackupDataService>();
-            services.AddTransient<IDatabaseHangfireService, DatabaseHangfireService>();
+            services.AddTransient<IHangfireService, HangfireService>();
 
             services.AddHangfireServer();
             services.AddControllers();
@@ -102,7 +102,8 @@ namespace Spotify_Server
             RecurringJob.AddOrUpdate<IBackupDataService>("BackupData1", x => x.Backup(), "00 22 * * *", TimeZoneInfo.FindSystemTimeZoneById(Configuration["Timezone"]));
             RecurringJob.AddOrUpdate<IBackupDataService>("BackupData2", x => x.Backup(), "00 9 * * *", TimeZoneInfo.FindSystemTimeZoneById(Configuration["Timezone"]));
             RecurringJob.AddOrUpdate("PingServer", () => Pinger.Ping(), "*/5 * * * *");
-            RecurringJob.AddOrUpdate<IDatabaseHangfireService>("TruncateDatabaseHangfire", x => x.Truncate(), "0 0 * * 6", TimeZoneInfo.FindSystemTimeZoneById(Configuration["Timezone"]));
+            RecurringJob.AddOrUpdate<IHangfireService>("TruncateDatabaseHangfire", x => x.TruncateDB(), "0 0 * * 6", TimeZoneInfo.FindSystemTimeZoneById(Configuration["Timezone"]));
+            RecurringJob.AddOrUpdate<IHangfireService>("DeleteOldFile", x => x.DeleteOldFile(), "0 0 * * 6", TimeZoneInfo.FindSystemTimeZoneById(Configuration["Timezone"]));
 
             app.UseCors("spotify");
 
