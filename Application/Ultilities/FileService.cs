@@ -81,74 +81,96 @@ namespace Application.Ultilities
 
         public static void SavePdfFile<T>(List<T> data, string filename, EnumFile typePdfFile)
         {
-            var filePath = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\user-content", $"{filename}.pdf");
-
-            Document document = new Document();
-            Page page = document.Pages.Add();
-            Table table = new Table();
-            table.Border = new BorderInfo(BorderSide.All, .5f, Color.FromRgb(System.Drawing.Color.LightGray));
-            table.DefaultCellBorder = new BorderInfo(BorderSide.All, .5f, Color.FromRgb(System.Drawing.Color.LightGray));
-
-            Row header = table.Rows.Add();
-            switch (typePdfFile)
+            try
             {
-                case EnumFile.Album:
-                    header.Cells.Add("Id");
-                    header.Cells.Add("Name");
-                    header.Cells.Add("Description");
-                    header.Cells.Add("CreatedAt");
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\user-content", $"{filename}.pdf");
+                Document document = new Document();
 
-                    for (int i = 0; i < data.Count; i++)
-                    {
-                        Row row = table.Rows.Add();
+                Page page = document.Pages.Add();
+                Table table = new Table();
+                table.Border = new BorderInfo(BorderSide.All, .5f, Color.FromRgb(System.Drawing.Color.LightGray));
+                table.DefaultCellBorder = new BorderInfo(BorderSide.All, .5f, Color.FromRgb(System.Drawing.Color.LightGray));
 
-                        var type = typeof(T);
-                        var id = type.GetProperty("Id").GetValue(data[i]).ToString();
-                        var name = type.GetProperty("Name").GetValue(data[i]).ToString();
-                        var description = type.GetProperty("Description").GetValue(data[i]).ToString();
-                        var createdate = type.GetProperty("CreatedAt").GetValue(data[i]).ToString();
+                MarginInfo margin = new MarginInfo();
+                margin.Top = 1;
+                margin.Left = 1;
+                margin.Right = 1;
+                margin.Bottom = 1;
 
-                        row.Cells.Add(id);
-                        row.Cells.Add(name);
-                        row.Cells.Add(description);
-                        row.Cells.Add(createdate);
-                    }
-                    break;
-                case EnumFile.Music:
-                    header.Cells.Add("Id");
-                    header.Cells.Add("Name");
-                    header.Cells.Add("Author");
-                    header.Cells.Add("Url");
-                    header.Cells.Add("Lyric");
-                    header.Cells.Add("CreateDate");
+                table.DefaultCellPadding = margin;
+                Row header = table.Rows.Add();
+                switch (typePdfFile)
+                {
+                    case EnumFile.Album:
+                        table.ColumnWidths = "30 100 165 125";
 
-                    for (int i = 0; i < data.Count; i++)
-                    {
-                        Row row = table.Rows.Add();
+                        header.Cells.Add("Id");
+                        header.Cells.Add("Name");
+                        header.Cells.Add("Description");
+                        header.Cells.Add("CreatedAt");
 
-                        var type = typeof(T);
-                        var id = type.GetProperty("Id").GetValue(data[i]).ToString();
-                        var name = HandleCommaCsv(type.GetProperty("Name").GetValue(data[i]).ToString());
-                        var author = HandleCommaCsv(type.GetProperty("Author").GetValue(data[i]).ToString());
-                        var url = HandleCommaCsv(type.GetProperty("Url").GetValue(data[i]).ToString());
-                        var lyric = HandleCommaCsv(type.GetProperty("Lyric").GetValue(data[i]).ToString());
-                        var createDate = type.GetProperty("CreateDate").GetValue(data[i])?.ToString();
+                        for (int i = 0; i < data.Count; i++)
+                        {
+                            Row row = table.Rows.Add();
 
-                        row.Cells.Add(id);
-                        row.Cells.Add(name);
-                        row.Cells.Add(author);
-                        row.Cells.Add(url);
-                        row.Cells.Add(lyric);
-                        row.Cells.Add(!string.IsNullOrEmpty(createDate) ? createDate : "");
-                    }
-                    break;
-                default:
-                    break;
+                            var type = typeof(T);
+                            var id = type.GetProperty("Id").GetValue(data[i]).ToString();
+                            var name = type.GetProperty("Name").GetValue(data[i]).ToString();
+                            var description = type.GetProperty("Description").GetValue(data[i]).ToString();
+                            var createdate = type.GetProperty("CreatedAt").GetValue(data[i]).ToString();
+
+                            row.Cells.Add(id);
+                            row.Cells.Add(name);
+                            row.Cells.Add(description);
+                            row.Cells.Add(createdate);
+                        }
+                        break;
+                    case EnumFile.Music:
+                        table.ColumnWidths = "30 100 90 100 100";
+
+                        header.Cells.Add("Id");
+                        header.Cells.Add("Name");
+                        header.Cells.Add("Author");
+                        header.Cells.Add("CreateDate");
+                        header.Cells.Add("Image");
+
+                        for (int i = 0; i < data.Count; i++)
+                        {
+                            Row row = table.Rows.Add();
+                            Image img = new Image();
+
+                            var type = typeof(T);
+                            var id = type.GetProperty("Id").GetValue(data[i]).ToString();
+                            var name = HandleCommaCsv(type.GetProperty("Name").GetValue(data[i]).ToString());
+                            var author = HandleCommaCsv(type.GetProperty("Author").GetValue(data[i]).ToString());
+                            var createDate = type.GetProperty("CreateDate").GetValue(data[i])?.ToString();
+                            img.File = type.GetProperty("Image").GetValue(data[i])?.ToString();
+                            img.FixWidth = 50;
+                            img.FixHeight = 50;
+
+                            row.Cells.Add(id);
+                            row.Cells.Add(name);
+                            row.Cells.Add(author);
+                            row.Cells.Add(!string.IsNullOrEmpty(createDate) ? createDate : "Null");
+                            Cell cell = row.Cells.Add();
+                            cell.Paragraphs.Add(img);
+
+                        }
+                        break;
+                    default:
+                        break;
+                }
+
+                document.Pages[1].Paragraphs.Add(table);
+                document.Save(filePath);
+
+            }
+            catch (Exception e)
+            {
+
+                throw;
             }
 
-            document.Pages[1].Paragraphs.Add(table);
-
-            document.Save(filePath);
         }
 
         private static string HandleCommaCsv(string data)
@@ -157,24 +179,6 @@ namespace Application.Ultilities
                 return "\"" + data + "\"";
 
             return data;
-        }
-        private static byte[] ObjectToByteArray(object obj)
-        {
-            try
-            {
-                if (obj == null)
-                    return null;
-                BinaryFormatter bf = new BinaryFormatter();
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    bf.Serialize(ms, obj);
-                    return ms.ToArray();
-                }
-            }
-            catch (Exception e)
-            {
-                throw new Exception();
-            }
         }
     }
 }
