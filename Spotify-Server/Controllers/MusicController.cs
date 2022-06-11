@@ -1,6 +1,8 @@
 ﻿using Application.IService;
 using Application.Ultilities;
+using Data.Enums;
 using Data.Models.Song;
+using Hangfire;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -15,11 +17,13 @@ namespace Spotify_Server.Controllers
     public class MusicController : ControllerBase
     {
         private readonly IMusicService _musicService;
+        private readonly IBackupDataService _backupDataService;
         private readonly IConfiguration _configuration;
 
-        public MusicController(IMusicService musicService, IConfiguration configuration)
+        public MusicController(IMusicService musicService, IBackupDataService backupDataService, IConfiguration configuration)
         {
             _musicService = musicService;
+            _backupDataService = backupDataService;
             _configuration = configuration;
         }
 
@@ -56,21 +60,25 @@ namespace Spotify_Server.Controllers
         }
         #endregion
 
-        #region ExportCSV
-        [HttpGet("ExportCSV")]
-        public ActionResult ExportCSV()
+        #region ExportFile
+        [HttpPost("ExportFile")]
+        public async Task<ActionResult> ExportFile(string request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var dateBackup = TimeZoneInfo.ConvertTimeFromUtc(
-                                            DateTime.UtcNow,
-                                            TimeZoneInfo.FindSystemTimeZoneById(_configuration["Timezone"])
-                                            ).ToString("dd-MM-yyyy");
-            var filePath = FileService.GetUrl($"Music-{dateBackup}.csv");
-            if (string.IsNullOrEmpty(filePath))
-                return NoContent();
+            TypeExportFile typeExportFile;
+            if (!Enum.TryParse<TypeExportFile>(request, out typeExportFile))
+                return BadRequest($"System don't support export type: {request}");
 
+            var filePath = GetFilePath(typeExportFile);
+
+            if (string.IsNullOrEmpty(filePath))
+            {
+                await _backupDataService.Backup(false);
+                filePath = GetFilePath(typeExportFile);
+            }
+                
             return Ok(filePath);
         }
         #endregion
@@ -119,5 +127,29 @@ namespace Spotify_Server.Controllers
         }
         #endregion
 
+
+        private string GetFilePath(TypeExportFile typeExportFile)
+        {
+            var filePath = "";
+            var dateBackup = TimeZoneInfo.ConvertTimeFromUtc(
+                                            DateTime.UtcNow,
+                                            TimeZoneInfo.FindSystemTimeZoneById(_configuration["Timezone"])
+                                            ).ToString("dd-MM-yyyy");
+            switch (typeExportFile)
+            {
+                case TypeExportFile.json:
+                    filePath = FileService.GetUrl($"Music-{dateBackup}.json");
+                    break;
+                case TypeExportFile.csv:
+                    filePath = FileService.GetUrl($"Music-{dateBackup}.csv");
+                    break;
+                case TypeExportFile.pdf:
+                    filePath = FileService.GetUrl($"Music-{dateBackup}.pdf");
+                    break;
+                default:
+                    break;
+            }
+            return filePath;
+        }
     }
 }

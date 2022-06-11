@@ -27,7 +27,7 @@ namespace Application.Service
             _configuration = configuration;
         }
 
-        public async Task Backup()
+        public async Task Backup(bool isSendMail)
         {
             var dateBackup = TimeZoneInfo.ConvertTimeFromUtc(
                                             DateTime.UtcNow,
@@ -73,19 +73,22 @@ namespace Application.Service
                     ReferenceLoopHandling = ReferenceLoopHandling.Ignore
                 }), $"Album-{dateBackup}.json");
 
-            var filePaths = new List<string>
+            if (isSendMail)
             {
-                FileService.GetUrl($"Music-{dateBackup}.json"),
-                FileService.GetUrl($"Album-{dateBackup}.json"),
-                FileService.GetUrl($"Music-{dateBackup}.csv"),
-                FileService.GetUrl($"Album-{dateBackup}.csv"),
-                FileService.GetUrl($"Music-{dateBackup}.pdf"),
-                FileService.GetUrl($"Album-{dateBackup}.pdf")
-            };
-            _mailService.SendMail("huy27297@gmail.com",
-                $"Backup data of date : {dateBackup} is success",
-                "Notification Backup Data",
-                filePaths);
+                var filePaths = new List<string>
+                {
+                    FileService.GetUrl($"Music-{dateBackup}.json"),
+                    FileService.GetUrl($"Album-{dateBackup}.json"),
+                    FileService.GetUrl($"Music-{dateBackup}.csv"),
+                    FileService.GetUrl($"Album-{dateBackup}.csv"),
+                    FileService.GetUrl($"Music-{dateBackup}.pdf"),
+                    FileService.GetUrl($"Album-{dateBackup}.pdf")
+                };
+                _mailService.SendMail("huy27297@gmail.com",
+                    $"Backup data of date : {dateBackup} is success",
+                    "Notification Backup Data",
+                    filePaths);
+            }
         }
     }
 }

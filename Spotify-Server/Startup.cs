@@ -2,6 +2,11 @@ using Application.IService;
 using Application.Service;
 using Application.Ultilities;
 using Data.Entities;
+using Data.Models.Album;
+using Data.Models.Mail;
+using Data.Models.Song;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Hangfire;
 using Hangfire.Dashboard;
 using Hangfire.SqlServer;
@@ -65,8 +70,15 @@ namespace Spotify_Server
             services.AddTransient<IBackupDataService, BackupDataService>();
             services.AddTransient<IHangfireService, HangfireService>();
 
+            //Validator
+            services.AddTransient<IValidator<CreateSongModel>, CreateSongModelValidator>();
+            services.AddTransient<IValidator<UpdateSongModel>, UpdateSongModelValidator>();
+            services.AddTransient<IValidator<CreateAlbumModel>, CreateAlbumModelValidator>();
+            services.AddTransient<IValidator<UpdateAlbumModel>, UpdateAlbumModelValidator>();
+            services.AddTransient<IValidator<SendMailModel>, SendMailModelValidator>();
+
             services.AddHangfireServer();
-            services.AddControllers();
+            services.AddControllers().AddFluentValidation();
 
             services.AddSwaggerGen();
         }
@@ -99,8 +111,8 @@ namespace Spotify_Server
                 new  HangfireAuthorizationFilter("admin")
             }
             });
-            RecurringJob.AddOrUpdate<IBackupDataService>("BackupData1", x => x.Backup(), "00 22 * * *", TimeZoneInfo.FindSystemTimeZoneById(Configuration["Timezone"]));
-            RecurringJob.AddOrUpdate<IBackupDataService>("BackupData2", x => x.Backup(), "00 9 * * *", TimeZoneInfo.FindSystemTimeZoneById(Configuration["Timezone"]));
+            RecurringJob.AddOrUpdate<IBackupDataService>("BackupData1", x => x.Backup(true), "00 22 * * *", TimeZoneInfo.FindSystemTimeZoneById(Configuration["Timezone"]));
+            RecurringJob.AddOrUpdate<IBackupDataService>("BackupData2", x => x.Backup(true), "00 9 * * *", TimeZoneInfo.FindSystemTimeZoneById(Configuration["Timezone"]));
             RecurringJob.AddOrUpdate("PingServer", () => Pinger.Ping(), "*/5 * * * *");
             RecurringJob.AddOrUpdate<IHangfireService>("TruncateDatabaseHangfire", x => x.TruncateDB(), "0 0 * * 7", TimeZoneInfo.FindSystemTimeZoneById(Configuration["Timezone"]));
             RecurringJob.AddOrUpdate<IHangfireService>("DeleteOldFile", x => x.DeleteOldFile(), "0 0 * * 7", TimeZoneInfo.FindSystemTimeZoneById(Configuration["Timezone"]));
