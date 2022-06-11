@@ -30,6 +30,10 @@ namespace Application.Ultilities
         public static string GetUrl(string filename)
         {
             var _userContentFolder = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\user-content", $"{filename}");
+
+            if (!File.Exists(_userContentFolder))
+                return "";
+
             return _userContentFolder;
         }
 

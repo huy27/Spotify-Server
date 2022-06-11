@@ -7,6 +7,6 @@ namespace Application.IService
 {
     public interface IBackupDataService
     {
-        Task Backup();
+        Task Backup(bool isSendMail);
     }
 }

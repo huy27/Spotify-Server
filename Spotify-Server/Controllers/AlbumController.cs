@@ -18,33 +18,40 @@ namespace Spotify_Server.Controllers
             _albumService = albumService;
         }
 
+        #region Get
         [HttpGet]
         public async Task<ActionResult> Get()
         {
             var albums = await _albumService.Get();
             return Ok(albums);
         }
+        #endregion
 
+        #region GetById
         [HttpGet("{id}")]
         public string Get(int id)
         {
             return "value";
         }
+        #endregion
 
+        #region Create
         [HttpPost("Create")]
         public async Task<ActionResult> Post([FromBody] CreateAlbumModel request)
         {
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             var albumId = await _albumService.Create(request);
             return StatusCode(201, $"albumId: {albumId}");
         }
+        #endregion
 
+        #region Update
         [HttpPost("Update")]
         public async Task<ActionResult> Update(int id, [FromBody] UpdateAlbumModel request)
         {
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             var result = await _albumService.Update(id, request);
@@ -53,7 +60,9 @@ namespace Spotify_Server.Controllers
 
             return Ok($"Update albumId: {id} is success");
         }
+        #endregion
 
+        #region UpdateStatus
         [HttpPost("UpdateStatus")]
         public async Task<ActionResult> UpdateStatus(int id, bool isActive)
         {
@@ -66,5 +75,6 @@ namespace Spotify_Server.Controllers
 
             return Ok($"Update status albumId: {id} to {isActive} is success");
         }
+        #endregion
     }
 }
