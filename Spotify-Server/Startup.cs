@@ -115,7 +115,7 @@ namespace Spotify_Server
             RecurringJob.AddOrUpdate<IBackupDataService>("BackupData2", x => x.Backup(true), "00 9 * * *", TimeZoneInfo.FindSystemTimeZoneById(Configuration["Timezone"]));
             RecurringJob.AddOrUpdate("PingServer", () => Pinger.Ping(), "*/5 * * * *");
             RecurringJob.AddOrUpdate<IHangfireService>("TruncateDatabaseHangfire", x => x.TruncateDB(), "0 0 * * 7", TimeZoneInfo.FindSystemTimeZoneById(Configuration["Timezone"]));
-            RecurringJob.AddOrUpdate<IHangfireService>("DeleteOldFile", x => x.DeleteOldFile(), "0 0 * * 7", TimeZoneInfo.FindSystemTimeZoneById(Configuration["Timezone"]));
+            RecurringJob.AddOrUpdate<IHangfireService>("DeleteOldFile", x => x.DeleteOldFile(), "0 0 * * SUN,TUE,FRI", TimeZoneInfo.FindSystemTimeZoneById(Configuration["Timezone"]));
 
             app.UseCors("spotify");
 
