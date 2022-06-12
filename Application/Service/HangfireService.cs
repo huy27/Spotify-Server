@@ -26,8 +26,8 @@ namespace Application.Ultilities
                 FileInfo fileInfo = new FileInfo(file);
                 if (fileInfo.Exists)
                 {
-                    //Remove all file was created before 7 days
-                    if (fileInfo.CreationTime < TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow.AddDays(-7),
+                    //Remove all file was created before 1 days
+                    if (fileInfo.CreationTime < TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow.AddDays(-1),
                                                     TimeZoneInfo.FindSystemTimeZoneById(_configuration["Timezone"])))
                     {
                         fileInfo.Delete();
