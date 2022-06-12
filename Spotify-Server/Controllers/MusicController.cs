@@ -78,8 +78,9 @@ namespace Spotify_Server.Controllers
                 await _backupDataService.Backup(false);
                 filePath = GetFilePath(typeExportFile);
             }
-                
-            return Ok(filePath);
+
+            var fileData = await System.IO.File.ReadAllBytesAsync(filePath);
+            return File(fileData, "application/force-download", $"Music.{typeExportFile}");
         }
         #endregion
 

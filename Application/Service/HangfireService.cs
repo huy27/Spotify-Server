@@ -44,11 +44,13 @@ namespace Application.Ultilities
             string script = await File.ReadAllTextAsync(filePath);
 
             using (SqlConnection conn = new SqlConnection(sqlConnectionString))
-            using (SqlCommand cmd = new SqlCommand(script, conn))
             {
-                await conn.OpenAsync();
-                await cmd.ExecuteNonQueryAsync();
-                await conn.CloseAsync();
+                using (SqlCommand cmd = new SqlCommand(script, conn))
+                {
+                    await conn.OpenAsync();
+                    await cmd.ExecuteNonQueryAsync();
+                    await conn.CloseAsync();
+                }
             }
         }
     }

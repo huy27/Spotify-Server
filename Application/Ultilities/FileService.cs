@@ -80,7 +80,7 @@ namespace Application.Ultilities
 
             csv.AppendLine(String.Join(",", "Total", listData.Count));
 
-            await File.WriteAllTextAsync(filePath, csv.ToString());
+            await File.WriteAllTextAsync(filePath, csv.ToString(), Encoding.UTF8);
         }
 
         public static void SavePdfFile<T>(List<T> data, string filename, EnumFile typePdfFile)
