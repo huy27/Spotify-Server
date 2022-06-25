@@ -21,16 +21,19 @@ namespace Application.Service
         private readonly ElasticClient _elasticClient;
         private readonly SpotifyContext _context;
         private readonly string INDEX_NAME;
+        private readonly int CAPACITY_MIGRATE;
 
         public ElasticSearchService(SpotifyContext context, IConfiguration configuration)
         {
             _context = context;
             _configuration = configuration;
             INDEX_NAME = "musics";
+            CAPACITY_MIGRATE = 200000;
 
             var connectionSettings = new ConnectionSettings(new Uri(_configuration["ElasticSearchServer"].ToString()));
             connectionSettings.ThrowExceptions(alwaysThrow: true);
             connectionSettings.PrettyJson();
+            connectionSettings.DisableDirectStreaming();
             _elasticClient = new ElasticClient(connectionSettings);
         }
 
@@ -42,38 +45,44 @@ namespace Application.Service
 
         public async Task MigrateListToES()
         {
-            var musics = await _context.Song.Select(x => new MusicSuggest
-            {
-                AlbumId = x.AlbumId,
-                Id = x.Id,
-                Author = x.Author,
-                CreateDate = x.CreateDate,
-                Image = x.Image,
-                IsActive = x.IsActive,
-                Lyric = x.Lyric,
-                Name = x.Name,
-                Url = x.Url,
-                Suggest = new CompletionField()
-                {
-                    Input = new[] { x.Name, x.Author }
-                }
-            }).ToListAsync();
             if (_elasticClient.Indices.Exists(INDEX_NAME).Exists)
             {
                 await _elasticClient.Indices.DeleteAsync(INDEX_NAME);
             }
 
             await _elasticClient.Indices.CreateAsync(INDEX_NAME,
-                    index => index.Map<MusicSuggest>(
-                        x => x.AutoMap()
-                              .Properties(ps => ps
-                                    .Completion(c => c
-                                        .Name(p => p.Suggest)))
-                    ));
+                                index => index.Map<MusicSuggest>(
+                                    x => x.AutoMap()
+                                          .Properties(ps => ps
+                                                .Completion(c => c
+                                                    .Name(p => p.Suggest)))
+                                ));
+            var count = _context.Song.Count();
+            var length = Math.Ceiling((double)count / CAPACITY_MIGRATE);
 
-            await _elasticClient.BulkAsync(b => b
-                     .Index(INDEX_NAME)
-                     .IndexMany(musics));
+            for (int i = 0; i < length; i++)
+            {
+                var musics = await _context.Song.Select(x => new MusicSuggest
+                {
+                    AlbumId = x.AlbumId,
+                    Id = x.Id,
+                    Author = x.Author,
+                    CreateDate = x.CreateDate,
+                    Image = x.Image,
+                    IsActive = x.IsActive,
+                    Lyric = x.Lyric,
+                    Name = x.Name,
+                    Url = x.Url,
+                    Suggest = new CompletionField()
+                    {
+                        Input = new[] { x.Name, x.Author }
+                    }
+                }).Skip(i * CAPACITY_MIGRATE).Take(CAPACITY_MIGRATE).ToListAsync();
+
+                await _elasticClient.BulkAsync(b => b
+                         .Index(INDEX_NAME)
+                         .IndexMany(musics));
+            }
         }
 
         public async Task<bool> UpdateDocument(int id, UpdateSongModel request)
