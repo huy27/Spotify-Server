@@ -57,27 +57,30 @@ namespace Application.Service
                                                 .Completion(c => c
                                                     .Name(p => p.Suggest)))
                                 ));
-            var count = _context.Song.Count();
-            var length = Math.Ceiling((double)count / CAPACITY_MIGRATE);
+            var lstMusic = _context.Song.Select(x => new MusicSuggest
+            {
+                AlbumId = x.AlbumId,
+                Id = x.Id,
+                Author = x.Author,
+                CreateDate = x.CreateDate,
+                Image = x.Image,
+                IsActive = x.IsActive,
+                Lyric = x.Lyric,
+                Name = x.Name,
+                Url = x.Url,
+                Suggest = new CompletionField()
+                {
+                    Input = new[] { x.Name, x.Author }
+                }
+            }).ToList();
+
+            var length = Math.Ceiling((double)lstMusic.Count / CAPACITY_MIGRATE);
 
             for (int i = 0; i < length; i++)
             {
-                var musics = await _context.Song.Select(x => new MusicSuggest
-                {
-                    AlbumId = x.AlbumId,
-                    Id = x.Id,
-                    Author = x.Author,
-                    CreateDate = x.CreateDate,
-                    Image = x.Image,
-                    IsActive = x.IsActive,
-                    Lyric = x.Lyric,
-                    Name = x.Name,
-                    Url = x.Url,
-                    Suggest = new CompletionField()
-                    {
-                        Input = new[] { x.Name, x.Author }
-                    }
-                }).Skip(i * CAPACITY_MIGRATE).Take(CAPACITY_MIGRATE).ToListAsync();
+                var musics = lstMusic.Skip(i * CAPACITY_MIGRATE)
+                                     .Take(CAPACITY_MIGRATE)
+                                     .ToList();
 
                 await _elasticClient.BulkAsync(b => b
                          .Index(INDEX_NAME)

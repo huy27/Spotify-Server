@@ -97,6 +97,22 @@ namespace Application.Service
             return songs;
         }
 
+        public async Task<List<SongModel>> GetByName(string name)
+        {
+            return await _context.Song.Where(x => x.Name == name)
+                        .Select(x => new SongModel
+                        {
+                            AlbumId = x.AlbumId,
+                            Id = x.Id,
+                            Name = x.Name,
+                            Author = x.Author,
+                            CreateDate = x.CreateDate,
+                            Image = x.Image,
+                            Lyric = x.Lyric,
+                            Url = x.Url,
+                        }).ToListAsync();
+        }
+
         public async Task<int> Update(int id, int albumId, UpdateSongModel request)
         {
             var song = await _context.Song.FirstOrDefaultAsync(x => x.Id == id && x.IsActive && x.Album.IsActive);
