@@ -14,10 +14,12 @@ namespace Application.Service
     public class MusicService : IMusicService
     {
         private readonly SpotifyContext _context;
+        private readonly IElasticSearchService _elasticsearchService;
 
-        public MusicService(SpotifyContext context)
+        public MusicService(SpotifyContext context, IElasticSearchService elasticsearchService)
         {
             _context = context;
+            _elasticsearchService = elasticsearchService;
         }
 
         public async Task<int> Create(int albumId, CreateSongModel request)
@@ -39,6 +41,17 @@ namespace Application.Service
             };
             await _context.Song.AddAsync(song);
             await _context.SaveChangesAsync();
+            await _elasticsearchService.AddDocument("musics", new SongModel
+            {
+                AlbumId = song.AlbumId,
+                Id = song.Id,
+                Author = song.Author,
+                CreateDate = song.CreateDate,
+                Image = song.Image,
+                Lyric = song.Lyric,
+                Name = song.Name,
+                Url = song.Url,
+            });
 
             return song.Id;
         }
