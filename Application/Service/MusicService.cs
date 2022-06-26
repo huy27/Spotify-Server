@@ -3,6 +3,7 @@ using Data.Entities;
 using Data.Models;
 using Data.Models.Song;
 using Microsoft.EntityFrameworkCore;
+using Nest;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,7 +42,7 @@ namespace Application.Service
             };
             await _context.Song.AddAsync(song);
             await _context.SaveChangesAsync();
-            await _elasticsearchService.AddDocument("musics", new SongModel
+            await _elasticsearchService.AddDocument("musics", new MusicSuggest
             {
                 AlbumId = song.AlbumId,
                 Id = song.Id,
@@ -51,6 +52,11 @@ namespace Application.Service
                 Lyric = song.Lyric,
                 Name = song.Name,
                 Url = song.Url,
+                IsActive = song.IsActive,
+                Suggest = new CompletionField()
+                {
+                    Input = new[] { song.Name, song.Author }
+                }
             });
 
             return song.Id;
