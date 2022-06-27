@@ -9,6 +9,8 @@ namespace Application.IService
     public interface IElasticSearchService
     {
         Task MigrateListToES();
+        Task<bool> AddDocument(string indexName, object document);
+        Task<bool> DeleteDocument(string indexName, int id);
         Task DeleteIndex(string indexName);
         Task<bool> UpdateDocument(int id, UpdateSongModel request);
         Task<List<IndexName>> GetAllIndex();

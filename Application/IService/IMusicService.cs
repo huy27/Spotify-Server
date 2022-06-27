@@ -12,6 +12,7 @@ namespace Application.IService
         Task<List<SongModel>> Get();
         Task<List<SongModel>> GetByAlbumId(int albumId);
         Task<List<SongModel>> GetByCondition(string name);
+        Task<List<SongModel>> GetByName(string name);
         Task<int> Create(int albumId, CreateSongModel request);
         Task<int> Update(int id, bool isActive);
         Task<int> Update(int id, int albumId, UpdateSongModel request);

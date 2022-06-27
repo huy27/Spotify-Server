@@ -71,6 +71,10 @@ namespace Spotify_Server
             services.AddTransient<IHangfireService, HangfireService>();
             services.AddTransient<IElasticSearchService, ElasticSearchService>();
 
+            //Scope for background services
+            services.AddScoped<IElasticSearchService, ElasticSearchService>();
+            services.AddScoped<IMailService, MailService>();
+
             //Validator
             services.AddTransient<IValidator<CreateSongModel>, CreateSongModelValidator>();
             services.AddTransient<IValidator<UpdateSongModel>, UpdateSongModelValidator>();

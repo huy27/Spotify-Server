@@ -18,19 +18,23 @@ namespace Application.Service
     public class ElasticSearchService : IElasticSearchService
     {
         private readonly IConfiguration _configuration;
+        private readonly ConnectionSettings connectionSettings;
         private readonly ElasticClient _elasticClient;
         private readonly SpotifyContext _context;
         private readonly string INDEX_NAME;
+        private readonly int CAPACITY_MIGRATE;
 
         public ElasticSearchService(SpotifyContext context, IConfiguration configuration)
         {
             _context = context;
             _configuration = configuration;
             INDEX_NAME = "musics";
+            CAPACITY_MIGRATE = 200000; //số lượng data tối da có thể migrate sang ElasticSearch
 
-            var connectionSettings = new ConnectionSettings(new Uri(_configuration["ElasticSearchServer"].ToString()));
+            connectionSettings = new ConnectionSettings(new Uri(_configuration["ElasticSearchServer"].ToString()));
             connectionSettings.ThrowExceptions(alwaysThrow: true);
             connectionSettings.PrettyJson();
+            connectionSettings.DisableDirectStreaming();
             _elasticClient = new ElasticClient(connectionSettings);
         }
 
@@ -40,9 +44,36 @@ namespace Application.Service
                 await _elasticClient.Indices.DeleteAsync(indexName);
         }
 
+        public async Task<bool> DeleteDocument(string indexName, int id)
+        {
+            var exist = await _elasticClient.Indices.ExistsAsync(indexName);
+            if (!exist.Exists)
+                return false; //Index không tồn tại
+
+            var existDocument = await _elasticClient.DocumentExistsAsync<SongModel>(id, d => d
+                                                .Index(indexName));
+            if (!existDocument.Exists)
+                return false; //Document không tồn tại
+
+            var result = await _elasticClient.DeleteAsync<SongModel>(id, i => i.Index(indexName));
+            return result.IsValid;
+        }
+
         public async Task MigrateListToES()
         {
-            var musics = await _context.Song.Select(x => new MusicSuggest
+            if (_elasticClient.Indices.Exists(INDEX_NAME).Exists)
+            {
+                await _elasticClient.Indices.DeleteAsync(INDEX_NAME);
+            }
+
+            await _elasticClient.Indices.CreateAsync(INDEX_NAME,
+                                index => index.Map<MusicSuggest>(
+                                    x => x.AutoMap()
+                                          .Properties(ps => ps
+                                                .Completion(c => c
+                                                    .Name(p => p.Suggest)))
+                                ));
+            var lstMusic = _context.Song.Select(x => new MusicSuggest
             {
                 AlbumId = x.AlbumId,
                 Id = x.Id,
@@ -57,23 +88,30 @@ namespace Application.Service
                 {
                     Input = new[] { x.Name, x.Author }
                 }
-            }).ToListAsync();
-            if (_elasticClient.Indices.Exists(INDEX_NAME).Exists)
+            }).ToList();
+
+            var length = Math.Ceiling((double)lstMusic.Count / CAPACITY_MIGRATE);
+
+            for (int i = 0; i < length; i++)
             {
-                await _elasticClient.Indices.DeleteAsync(INDEX_NAME);
+                var musics = lstMusic.Skip(i * CAPACITY_MIGRATE)
+                                     .Take(CAPACITY_MIGRATE)
+                                     .ToList();
+
+                await _elasticClient.BulkAsync(b => b
+                         .Index(INDEX_NAME)
+                         .IndexMany(musics));
             }
+        }
 
-            await _elasticClient.Indices.CreateAsync(INDEX_NAME,
-                    index => index.Map<MusicSuggest>(
-                        x => x.AutoMap()
-                              .Properties(ps => ps
-                                    .Completion(c => c
-                                        .Name(p => p.Suggest)))
-                    ));
+        public async Task<bool> AddDocument(string indexName, object document)
+        {
+            var exist = await _elasticClient.Indices.ExistsAsync(indexName);
+            if(!exist.Exists)
+                return false;
 
-            await _elasticClient.BulkAsync(b => b
-                     .Index(INDEX_NAME)
-                     .IndexMany(musics));
+            var result = await _elasticClient.IndexAsync(document, i => i.Index(indexName));
+            return result.IsValid;
         }
 
         public async Task<bool> UpdateDocument(int id, UpdateSongModel request)
@@ -82,11 +120,11 @@ namespace Application.Service
             if (music.Source == null)
                 return false;
 
-            music.Source.Name = request.Name;
-            music.Source.Author = request.Author;
-            music.Source.Url = request.Url;
-            music.Source.Image = request.Image;
-            music.Source.Lyric = request.Lyric;
+            music.Source.Name = request.Name ?? music.Source.Name;
+            music.Source.Author = request.Author ?? music.Source.Author;
+            music.Source.Url = request.Url ?? music.Source.Url;
+            music.Source.Image = request.Image ?? music.Source.Image;
+            music.Source.Lyric = request.Lyric ?? music.Source.Lyric;
             music.Source.IsActive = request.IsActive;
 
             var response = await _elasticClient.UpdateAsync<Song>(id, u => u.Index(INDEX_NAME)

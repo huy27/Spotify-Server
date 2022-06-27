@@ -14,6 +14,7 @@ namespace Data.Entities
         private readonly IConfiguration _configuration;
         public SpotifyContext()
         {
+            this.Database.SetCommandTimeout(1000);
         }
 
         public SpotifyContext(DbContextOptions<SpotifyContext> options, IConfiguration configuration)

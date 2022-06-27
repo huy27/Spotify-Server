@@ -1,8 +1,10 @@
 ﻿using Application.IService;
+using Application.Ultilities;
 using Data.Entities;
 using Data.Models;
 using Data.Models.Song;
 using Microsoft.EntityFrameworkCore;
+using Nest;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,6 +41,7 @@ namespace Application.Service
             };
             await _context.Song.AddAsync(song);
             await _context.SaveChangesAsync();
+            await KafkaProducerService.SendMusicsAsync(song);
 
             return song.Id;
         }
@@ -97,9 +100,25 @@ namespace Application.Service
             return songs;
         }
 
+        public async Task<List<SongModel>> GetByName(string name)
+        {
+            return await _context.Song.Where(x => x.Name == name)
+                        .Select(x => new SongModel
+                        {
+                            AlbumId = x.AlbumId,
+                            Id = x.Id,
+                            Name = x.Name,
+                            Author = x.Author,
+                            CreateDate = x.CreateDate,
+                            Image = x.Image,
+                            Lyric = x.Lyric,
+                            Url = x.Url,
+                        }).ToListAsync();
+        }
+
         public async Task<int> Update(int id, int albumId, UpdateSongModel request)
         {
-            var song = await _context.Song.FirstOrDefaultAsync(x => x.Id == id && x.IsActive && x.Album.IsActive);
+            var song = await _context.Song.FirstOrDefaultAsync(x => x.Id == id && x.Album.IsActive);
             if (song == null)
                 return -1;
 
@@ -112,7 +131,9 @@ namespace Application.Service
             song.IsActive = request.IsActive;
 
             _context.Song.Update(song);
-            return await _context.SaveChangesAsync();
+            var result = await _context.SaveChangesAsync();
+            await KafkaProducerService.SendMusicsAsync(song);
+            return result;
         }
 
         public async Task<int> Update(int id, bool isActive)
@@ -124,6 +145,7 @@ namespace Application.Service
             song.IsActive = isActive;
             _context.Song.Update(song);
             var result = await _context.SaveChangesAsync();
+            await KafkaProducerService.SendMusicsAsync(song);
             return result;
         }
     }
