@@ -48,6 +48,18 @@ namespace Spotify_Server.Controllers
         }
         #endregion
 
+        #region GetByName
+        [HttpGet("GetByName/{name}")]
+        public async Task<ActionResult> GetByName(string name)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var songs = await _musicService.GetByName(name);
+            return Ok(songs);
+        }
+        #endregion
+
         #region SearchByCondition
         [HttpGet("SearchByCondition")]
         public async Task<ActionResult> SearchByCondition(string name)
