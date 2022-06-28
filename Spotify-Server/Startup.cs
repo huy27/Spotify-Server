@@ -1,3 +1,4 @@
+using Application.GraphQL;
 using Application.IService;
 using Application.Service;
 using Application.Ultilities;
@@ -10,19 +11,14 @@ using FluentValidation.AspNetCore;
 using Hangfire;
 using Hangfire.Dashboard;
 using Hangfire.SqlServer;
+using HotChocolate;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Spotify_Server
 {
@@ -63,6 +59,14 @@ namespace Spotify_Server
 
             services.AddDbContext<SpotifyContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("SpotifyConnection")));
+
+            //GraphQL
+            services.AddScoped<Query>();
+            services.AddScoped<Mutation>();
+            services.AddScoped<IMusicService, MusicService>();
+            services.AddGraphQLServer()
+                    .AddQueryType<Query>()
+                    .AddMutationType<Mutation>();
 
             services.AddTransient<IMusicService, MusicService>();
             services.AddTransient<IAlbumService, AlbumService>();
@@ -132,6 +136,7 @@ namespace Spotify_Server
             {
                 endpoints.MapControllers();
                 endpoints.MapHangfireDashboard();
+                endpoints.MapGraphQL();
             });
         }
     }
