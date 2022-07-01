@@ -38,5 +38,16 @@ namespace Application.GraphQL
             var result = _context.Album.Remove(album);
             return await _context.SaveChangesAsync();
         }
+
+        [GraphQLDescription("Delete music by Id")]
+        public async Task<int> DeleteMusic(int id)
+        {
+            var song = await _context.Song.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (song == null) return -1;
+
+            var result = _context.Song.Remove(song);
+            return await _context.SaveChangesAsync();
+        }
     }
 }
