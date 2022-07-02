@@ -75,6 +75,9 @@ namespace Spotify_Server
             services.AddTransient<IHangfireService, HangfireService>();
             services.AddTransient<IElasticSearchService, ElasticSearchService>();
 
+            //Redis
+            services.AddTransient<ICacheStrigsStack, CacheStrigsStack>();
+
             //Scope for background services
             services.AddScoped<IElasticSearchService, ElasticSearchService>();
             services.AddScoped<IMailService, MailService>();
