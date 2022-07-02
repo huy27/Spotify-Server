@@ -10,7 +10,8 @@
     <PackageReference Include="Hangfire.AspNetCore" Version="1.7.29" />
     <PackageReference Include="Hangfire.Core" Version="1.7.29" />
     <PackageReference Include="Hangfire.SqlServer" Version="1.7.29" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.25">
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.1.26" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.17">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

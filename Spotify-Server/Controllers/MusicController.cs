@@ -3,6 +3,7 @@ using Application.Ultilities;
 using Data.Enums;
 using Data.Models.Song;
 using Hangfire;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -14,6 +15,7 @@ namespace Spotify_Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class MusicController : ControllerBase
     {
         private readonly IMusicService _musicService;
@@ -28,6 +30,7 @@ namespace Spotify_Server.Controllers
         }
 
         #region Get
+        [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult> Get()
         {
@@ -37,6 +40,7 @@ namespace Spotify_Server.Controllers
         #endregion
 
         #region GetByAlbumId
+        [AllowAnonymous]
         [HttpGet("{albumId}")]
         public async Task<ActionResult> Get(int albumId)
         {
@@ -49,6 +53,7 @@ namespace Spotify_Server.Controllers
         #endregion
 
         #region GetByName
+        [AllowAnonymous]
         [HttpGet("GetByName/{name}")]
         public async Task<ActionResult> GetByName(string name)
         {
@@ -61,6 +66,7 @@ namespace Spotify_Server.Controllers
         #endregion
 
         #region SearchByCondition
+        [AllowAnonymous]
         [HttpGet("SearchByCondition")]
         public async Task<ActionResult> SearchByCondition(string name)
         {
@@ -97,6 +103,7 @@ namespace Spotify_Server.Controllers
         #endregion
 
         #region Create
+        [Authorize(Roles = UserRoles.Admin)]
         [HttpPost("Create")]
         public async Task<ActionResult> Create(int albumId, [FromBody] CreateSongModel request)
         {
@@ -112,6 +119,7 @@ namespace Spotify_Server.Controllers
         #endregion
 
         #region UpdateStatus
+        [Authorize(Roles = UserRoles.Admin)]
         [HttpPost("UpdateStatus")]
         public async Task<ActionResult> UpdateStatus(int id, bool isActive)
         {
@@ -127,6 +135,7 @@ namespace Spotify_Server.Controllers
         #endregion
 
         #region Update
+        [Authorize(Roles = UserRoles.Admin)]
         [HttpPost("Update")]
         public async Task<ActionResult> Update(int id, int albumId, UpdateSongModel request)
         {

@@ -1,4 +1,4 @@
-using Application.GraphQL;
+﻿using Application.GraphQL;
 using Application.IService;
 using Application.Service;
 using Application.Ultilities;
@@ -6,19 +6,25 @@ using Data.Entities;
 using Data.Models.Album;
 using Data.Models.Mail;
 using Data.Models.Song;
+using Data.Models.User;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Hangfire;
 using Hangfire.Dashboard;
 using Hangfire.SqlServer;
 using HotChocolate;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System;
+using System.Collections.Generic;
 
 namespace Spotify_Server
 {
@@ -60,6 +66,31 @@ namespace Spotify_Server
             services.AddDbContext<SpotifyContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("SpotifyConnection")));
 
+            // Identity
+            services.AddIdentity<AppUser, IdentityRole>()
+                    .AddEntityFrameworkStores<SpotifyContext>()
+                    .AddDefaultTokenProviders();
+            services.Configure<IdentityOptions>(options =>
+            {
+                // Thiết lập về Password
+                options.Password.RequireDigit = false; // Không bắt phải có số
+                options.Password.RequireLowercase = false; // Không bắt phải có chữ thường
+                options.Password.RequireNonAlphanumeric = false; // Không bắt ký tự đặc biệt
+                options.Password.RequireUppercase = false; // Không bắt buộc chữ in
+                options.Password.RequiredLength = 3; // Số ký tự tối thiểu của password
+
+                // Cấu hình Lockout - khóa user
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromSeconds(30); // Khóa 30 giây
+                options.Lockout.MaxFailedAccessAttempts = 3; // Thất bại 3 lần thì khóa
+                options.Lockout.AllowedForNewUsers = true;
+
+                // Cấu hình về User.
+                options.User.AllowedUserNameCharacters = // các ký tự đặt tên user
+                    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
+                options.User.RequireUniqueEmail = true;  // Email là duy nhất
+
+            });
+
             //GraphQL
             services.AddScoped<Query>();
             services.AddScoped<Mutation>();
@@ -74,6 +105,7 @@ namespace Spotify_Server
             services.AddTransient<IBackupDataService, BackupDataService>();
             services.AddTransient<IHangfireService, HangfireService>();
             services.AddTransient<IElasticSearchService, ElasticSearchService>();
+            services.AddTransient<IUserService, UserService>();
 
             //Redis
             services.AddTransient<ICacheStrigsStack, CacheStrigsStack>();
@@ -88,11 +120,71 @@ namespace Spotify_Server
             services.AddTransient<IValidator<CreateAlbumModel>, CreateAlbumModelValidator>();
             services.AddTransient<IValidator<UpdateAlbumModel>, UpdateAlbumModelValidator>();
             services.AddTransient<IValidator<SendMailModel>, SendMailModelValidator>();
+            services.AddTransient<IValidator<RegisterModel>, RegisterModelValidator>();
 
             services.AddHangfireServer();
             services.AddControllers().AddFluentValidation();
 
-            services.AddSwaggerGen();
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "API WSVAP", Version = "v1" });
+
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Description = @"JWT Authorization header using the Bearer scheme. \r\n\r\n
+                      Enter 'Bearer' [space] and then your token in the text input below.
+                      \r\n\r\nExample: 'Bearer 12345abcdef'",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer"
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+                  {
+                    {
+                      new OpenApiSecurityScheme
+                      {
+                        Reference = new OpenApiReference
+                          {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                          },
+                          Scheme = "oauth2",
+                          Name = "Bearer",
+                          In = ParameterLocation.Header,
+                        },
+                        new List<string>()
+                      }
+                    });
+            });
+
+            string issuer = Configuration["Tokens:Issuer"];
+            string audience = Configuration["Tokens:Audience"];
+            string signingKey = Configuration["Tokens:Secret"];
+            byte[] signingKeyBytes = System.Text.Encoding.UTF8.GetBytes(signingKey);
+            services.AddAuthentication(opt =>
+            {
+                opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                opt.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = issuer,
+                    ValidateAudience = true,
+                    ValidAudience = audience,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ClockSkew = TimeSpan.Zero,
+                    IssuerSigningKey = new SymmetricSecurityKey(signingKeyBytes)
+                };
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -137,6 +229,7 @@ namespace Spotify_Server
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
