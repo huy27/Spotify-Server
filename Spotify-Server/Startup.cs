@@ -102,6 +102,10 @@ namespace Spotify_Server
             {
                 app.UseDeveloperExceptionPage();
             }
+            if (!env.IsDevelopment())
+            {
+                app.UseExceptionHandler("/error");
+            }
 
             app.UseHttpsRedirection();
 
