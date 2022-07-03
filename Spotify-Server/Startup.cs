@@ -127,7 +127,7 @@ namespace Spotify_Server
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "API WSVAP", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "API Spotify", Version = "v1" });
 
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
@@ -208,7 +208,7 @@ namespace Spotify_Server
 
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+                c.SwaggerEndpoint($"{Configuration["ServerApi"]}/swagger/v1/swagger.json", "My API Spotify");
             });
 
             app.UseHangfireDashboard("/hangfire", new DashboardOptions
