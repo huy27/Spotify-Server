@@ -40,14 +40,14 @@ namespace Application.Service
                 var userRoles = await _userManager.GetRolesAsync(user);
                 var authClaims = new List<Claim>
                 {
-                    new Claim("Name", user.UserName),
-                    new Claim("Email", user.Email),
-                    new Claim("Expire", DateTime.SpecifyKind(DateTime.Now.AddHours(3), DateTimeKind.Utc).ToString("dd/MM/yyyy HH:mm:ss UTC")),
-                    new Claim("Jti", Guid.NewGuid().ToString()),
+                    new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim(ClaimTypes.Email, user.Email),
+                    new Claim(ClaimTypes.Expired, DateTime.SpecifyKind(DateTime.Now.AddHours(3), DateTimeKind.Utc).ToString("dd/MM/yyyy HH:mm:ss UTC")),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 };
                 foreach (var userRole in userRoles)
                 {
-                    authClaims.Add(new Claim("Role", userRole));
+                    authClaims.Add(new Claim(ClaimTypes.Role, userRole));
                 }
                 var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Tokens:Secret"]));
                 var token = new JwtSecurityToken(
