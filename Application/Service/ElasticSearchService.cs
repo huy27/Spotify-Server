@@ -1,6 +1,7 @@
 ﻿using Application.IService;
 using Data.Entities;
 using Data.Models;
+using Data.Models.Elastic;
 using Data.Models.Song;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -205,6 +206,35 @@ namespace Application.Service
                                             })
                                     ).OrderByDescending(x => x?.Id).ToList();
             return suggestions;
+        }
+
+        public async Task<SongResponse> SearchByNamePaging(string name, string author, int pageIndex, int pageSize)
+        {
+            await _elasticClient.Indices.UpdateSettingsAsync(INDEX_NAME, s => s
+                                                .IndexSettings(i => i.Setting(UpdatableIndexSettings.MaxResultWindow, 100000)));
+            var query = new SearchDescriptor<SongModel>()
+                                 .Query(q => q
+                                    .Regexp(r => r
+                                        .Field(f => f.Name).Value(name?.ToLower() + ".*"))
+                                 && q
+                                    .Regexp(r => r
+                                        .Field(f => f.Author).Value(author?.ToLower() + ".*"))
+                                 );
+            var searchResponse = await _elasticClient.SearchAsync<SongModel>(s => query
+                                                     .Index(INDEX_NAME)
+                                                     .From(pageIndex * pageSize)
+                                                     .Size(pageSize));
+            var totalResponse = await _elasticClient.SearchAsync<SongModel>(s => query
+                                                    .Index(INDEX_NAME)
+                                                    .Scroll("30s")); // scroll timeout
+            var response = new SongResponse
+            {
+                Songs = searchResponse.HitsMetadata?.Hits.Select(x => x?.Source)
+                                                         .OrderByDescending(x => x?.Id)
+                                                         .ToList(),
+                Total = totalResponse.Total
+            };
+            return response;
         }
     }
 }

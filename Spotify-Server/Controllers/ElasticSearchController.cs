@@ -119,5 +119,15 @@ namespace Spotify_Server.Controllers
             return Ok(result);
         }
         #endregion
+
+        #region SearchByNamePaging
+        [AllowAnonymous]
+        [HttpGet("SearchByNamePaging")]
+        public async Task<ActionResult> SearchByNamePaging(string name, string author, int pageIndex = 0, int pageSize = 10)
+        {
+            var result = await _elasticSearchService.SearchByNamePaging(name, author, pageIndex, pageSize);
+            return Ok(result);
+        }
+        #endregion
     }
 }
