@@ -1,4 +1,5 @@
 ﻿using Data.Models;
+using Data.Models.Elastic;
 using Data.Models.Song;
 using Nest;
 using System.Collections.Generic;
@@ -17,5 +18,6 @@ namespace Application.IService
         Task<List<SongModel>> GetAllDocument();
         Task<List<SongModel>> SearchByNameOrAuthor(string name, string author);
         Task<List<SongModel>> AutoComplete(string keyword);
+        Task<SongResponse> SearchByNamePaging(string name, string author, int pageIndex, int pageSize);
     }
 }

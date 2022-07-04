@@ -16,26 +16,33 @@ namespace Application.Service
     public class UserService : IUserService
     {
         private readonly UserManager<AppUser> _userManager;
+        private readonly SignInManager<AppUser> _signInManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
 
-        public UserService(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration)
+        public UserService(SignInManager<AppUser> signInManager, 
+            UserManager<AppUser> userManager, 
+            RoleManager<IdentityRole> roleManager, 
+            IConfiguration configuration)
         {
             _userManager = userManager;
+            _signInManager = signInManager;
             _roleManager = roleManager;
             _configuration = configuration;
         }
 
         public async Task<string> Login(string username, string password)
         {
-            var user = await _userManager.FindByNameAsync(username);
-            if (user != null && await _userManager.CheckPasswordAsync(user, password))
+            var result = await _signInManager.PasswordSignInAsync(username, password, false, lockoutOnFailure: true);
+            if (result.Succeeded)
             {
+                var user = await _userManager.FindByNameAsync(username);
                 var userRoles = await _userManager.GetRolesAsync(user);
                 var authClaims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, user.UserName),
                     new Claim(ClaimTypes.Email, user.Email),
+                    new Claim(ClaimTypes.Expired, DateTime.SpecifyKind(DateTime.Now.AddHours(3), DateTimeKind.Utc).ToString("dd/MM/yyyy HH:mm:ss UTC")),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 };
                 foreach (var userRole in userRoles)
@@ -52,6 +59,13 @@ namespace Application.Service
                     );
                 return new JwtSecurityTokenHandler().WriteToken(token);
             }
+            else if (result.IsLockedOut)
+            {
+                var user = await _userManager.FindByNameAsync(username);
+                var timeUntilBlock = user.LockoutEnd.Value - DateTimeOffset.Now;
+                return $"Account {username} is block until {timeUntilBlock.Seconds}s";
+            }
+                
             return String.Empty;
         }
 

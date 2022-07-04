@@ -1,6 +1,8 @@
 ﻿using Application.IService;
+using Application.Ultilities;
 using Data.Models;
 using Data.Models.Song;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -9,6 +11,7 @@ using System.Threading.Tasks;
 namespace Spotify_Server.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
     public class ElasticSearchController : ControllerBase
     {
@@ -20,6 +23,7 @@ namespace Spotify_Server.Controllers
         }
 
         #region MigrateDataToES
+        [Authorize(Roles = UserRoles.Admin)]
         [HttpPost("MigrateDataToES")]
         public async Task<ActionResult> MigrateDataToES()
         {
@@ -29,6 +33,7 @@ namespace Spotify_Server.Controllers
         #endregion
 
         #region AddDocument
+        [Authorize(Roles = UserRoles.Admin)]
         [HttpPost("AddDocument")]
         public async Task<ActionResult> AddDocument(string indexName, SongModel request)
         {
@@ -40,6 +45,7 @@ namespace Spotify_Server.Controllers
         #endregion
 
         #region DeleteDocument
+        [Authorize(Roles = UserRoles.Admin)]
         [HttpDelete("DeleteDocument")]
         public async Task<ActionResult> DeleteDocument(string indexName, int id)
         {
@@ -51,6 +57,7 @@ namespace Spotify_Server.Controllers
         #endregion
 
         #region DeleteIndex
+        [Authorize(Roles = UserRoles.Admin)]
         [HttpDelete("DeleteIndex")]
         public async Task<ActionResult> DeleteIndex(string indexName)
         {
@@ -60,6 +67,7 @@ namespace Spotify_Server.Controllers
         #endregion
 
         #region UpdateDocument
+        [Authorize(Roles = UserRoles.Admin)]
         [HttpPut("UpdateDocument")]
         public async Task<ActionResult> UpdateDocument(int id, UpdateSongModel request)
         {
@@ -71,6 +79,7 @@ namespace Spotify_Server.Controllers
         #endregion
 
         #region GetAllIndex
+        [AllowAnonymous]
         [HttpGet("GetAllIndex")]
         public async Task<ActionResult> GetAllIndex()
         {
@@ -80,6 +89,7 @@ namespace Spotify_Server.Controllers
         #endregion
 
         #region GetAllDocument
+        [AllowAnonymous]
         [HttpGet("GetAllDocument")]
         public async Task<ActionResult> GetAllDocument()
         {
@@ -89,6 +99,7 @@ namespace Spotify_Server.Controllers
         #endregion
 
         #region SearchByNameOrAuthor
+        [AllowAnonymous]
         [HttpGet("SearchByNameOrAuthor")]
         public async Task<ActionResult> SearchByNameOrAuthor(string name, string author)
         {
@@ -98,12 +109,23 @@ namespace Spotify_Server.Controllers
         #endregion
 
         #region AutoComplete
+        [AllowAnonymous]
         [HttpGet("AutoComplete")]
         public async Task<ActionResult> AutoComplete(string keywork)
         {
             if(string.IsNullOrEmpty(keywork))
                 return Ok();
             var result = await _elasticSearchService.AutoComplete(keywork);
+            return Ok(result);
+        }
+        #endregion
+
+        #region SearchByNamePaging
+        [AllowAnonymous]
+        [HttpGet("SearchByNamePaging")]
+        public async Task<ActionResult> SearchByNamePaging(string name, string author, int pageIndex = 0, int pageSize = 10)
+        {
+            var result = await _elasticSearchService.SearchByNamePaging(name, author, pageIndex, pageSize);
             return Ok(result);
         }
         #endregion

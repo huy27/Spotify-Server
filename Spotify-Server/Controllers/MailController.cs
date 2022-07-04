@@ -1,5 +1,7 @@
 ﻿using Application.IService;
+using Application.Ultilities;
 using Data.Models.Mail;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -7,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Spotify_Server.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize(Roles = UserRoles.Admin)]
     [ApiController]
     public class MailController : ControllerBase
     {

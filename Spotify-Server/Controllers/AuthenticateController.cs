@@ -1,4 +1,5 @@
 ﻿using Application.IService;
+using Application.Ultilities;
 using Data.Models.User;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -52,8 +53,8 @@ namespace Spotify_Server.Controllers
         #endregion
 
         #region RegisterAdmin
+        [Authorize(Roles = UserRoles.Admin)]
         [HttpPost("RegisterAdmin")]
-        [AllowAnonymous]
         public async Task<IActionResult> RegisterAdmin([FromBody] RegisterModel registerModel)
         {
             if (!ModelState.IsValid)

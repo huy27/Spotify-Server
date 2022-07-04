@@ -99,6 +99,7 @@ namespace Spotify_Server
                     .AddQueryType<Query>()
                     .AddMutationType<Mutation>();
 
+            //DI
             services.AddTransient<IMusicService, MusicService>();
             services.AddTransient<IAlbumService, AlbumService>();
             services.AddTransient<IMailService, MailService>();
@@ -194,7 +195,7 @@ namespace Spotify_Server
             {
                 app.UseDeveloperExceptionPage();
             }
-            if (!env.IsDevelopment())
+            else
             {
                 app.UseExceptionHandler("/error");
             }

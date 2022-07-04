@@ -1,5 +1,7 @@
 ﻿using Application.IService;
+using Application.Ultilities;
 using Data.Models.Album;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
@@ -8,6 +10,7 @@ using System.Threading.Tasks;
 namespace Spotify_Server.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
     public class AlbumController : ControllerBase
     {
@@ -19,6 +22,7 @@ namespace Spotify_Server.Controllers
         }
 
         #region Get
+        [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult> Get()
         {
@@ -28,6 +32,7 @@ namespace Spotify_Server.Controllers
         #endregion
 
         #region GetById
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public string Get(int id)
         {
@@ -36,6 +41,7 @@ namespace Spotify_Server.Controllers
         #endregion
 
         #region Create
+        [Authorize(Roles = UserRoles.Admin)]
         [HttpPost("Create")]
         public async Task<ActionResult> Post([FromBody] CreateAlbumModel request)
         {
@@ -48,6 +54,7 @@ namespace Spotify_Server.Controllers
         #endregion
 
         #region Update
+        [Authorize(Roles = UserRoles.Admin)]
         [HttpPost("Update")]
         public async Task<ActionResult> Update(int id, [FromBody] UpdateAlbumModel request)
         {
@@ -63,6 +70,7 @@ namespace Spotify_Server.Controllers
         #endregion
 
         #region UpdateStatus
+        [Authorize(Roles = UserRoles.Admin)]
         [HttpPost("UpdateStatus")]
         public async Task<ActionResult> UpdateStatus(int id, bool isActive)
         {
