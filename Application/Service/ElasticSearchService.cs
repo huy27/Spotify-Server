@@ -3,6 +3,7 @@ using Data.Entities;
 using Data.Models;
 using Data.Models.Elastic;
 using Data.Models.Song;
+using Elasticsearch.Net;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Nest;
@@ -56,7 +57,7 @@ namespace Application.Service
             if (!existDocument.Exists)
                 return false; //Document không tồn tại
 
-            var result = await _elasticClient.DeleteAsync<SongModel>(id, i => i.Index(indexName));
+            var result = await _elasticClient.DeleteAsync<SongModel>(id, i => i.Index(indexName).Refresh(Refresh.True));
             return result.IsValid;
         }
 
@@ -111,7 +112,7 @@ namespace Application.Service
             if(!exist.Exists)
                 return false;
 
-            var result = await _elasticClient.IndexAsync(document, i => i.Index(indexName));
+            var result = await _elasticClient.IndexAsync(document, i => i.Index(indexName).Refresh(Refresh.True));
             return result.IsValid;
         }
 
@@ -129,7 +130,8 @@ namespace Application.Service
             music.Source.IsActive = request.IsActive;
 
             var response = await _elasticClient.UpdateAsync<Song>(id, u => u.Index(INDEX_NAME)
-                                                .Doc(music.Source));
+                                                .Doc(music.Source)
+                                                .Refresh(Refresh.True));
             return response.IsValid;
         }
 
@@ -210,8 +212,6 @@ namespace Application.Service
 
         public async Task<SongResponse> SearchByNamePaging(string name, string author, int pageIndex, int pageSize)
         {
-            await _elasticClient.Indices.UpdateSettingsAsync(INDEX_NAME, s => s
-                                                .IndexSettings(i => i.Setting(UpdatableIndexSettings.MaxResultWindow, 100000)));
             var query = new SearchDescriptor<SongModel>()
                                  .Query(q => q
                                     .Regexp(r => r
@@ -222,17 +222,14 @@ namespace Application.Service
                                  );
             var searchResponse = await _elasticClient.SearchAsync<SongModel>(s => query
                                                      .Index(INDEX_NAME)
+                                                     .TrackTotalHits(true)
                                                      .From(pageIndex * pageSize)
-                                                     .Size(pageSize));
-            var totalResponse = await _elasticClient.SearchAsync<SongModel>(s => query
-                                                    .Index(INDEX_NAME)
-                                                    .Scroll("30s")); // scroll timeout
+                                                     .Size(pageSize)
+                                                     .Sort(sort => sort.Descending(des => des.Id)));
             var response = new SongResponse
             {
-                Songs = searchResponse.HitsMetadata?.Hits.Select(x => x?.Source)
-                                                         .OrderByDescending(x => x?.Id)
-                                                         .ToList(),
-                Total = totalResponse.Total
+                Songs = searchResponse.HitsMetadata?.Hits.Select(x => x?.Source).ToList(),
+                Total = searchResponse.Total
             };
             return response;
         }

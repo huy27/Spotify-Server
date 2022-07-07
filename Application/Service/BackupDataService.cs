@@ -58,20 +58,22 @@ namespace Application.Service
             FileService.SavePdfFile<AlbumModel>(albums, $"Album-{dateBackup}", EnumFile.Album);
             FileService.SavePdfFile<SongModel>(songs, $"Music-{dateBackup}", EnumFile.Music);
 
-            await FileService.SaveCsvFile<AlbumModel>(albums, $"Album-{dateBackup}.csv", EnumFile.Album);
-            await FileService.SaveCsvFile<SongModel>(songs, $"Music-{dateBackup}.csv", EnumFile.Music);
+            var task1 = FileService.SaveCsvFile<AlbumModel>(albums, $"Album-{dateBackup}.csv", EnumFile.Album);
+            var task2 = FileService.SaveCsvFile<SongModel>(songs, $"Music-{dateBackup}.csv", EnumFile.Music);
 
-            await FileService.SaveFile(JsonConvert.SerializeObject(songs, Formatting.Indented,
+            var task3 = FileService.SaveFile(JsonConvert.SerializeObject(songs, Formatting.Indented,
                 new JsonSerializerSettings
                 {
                     ReferenceLoopHandling = ReferenceLoopHandling.Ignore
                 }), $"Music-{dateBackup}.json");
 
-            await FileService.SaveFile(JsonConvert.SerializeObject(albums, Formatting.Indented,
+            var task4 = FileService.SaveFile(JsonConvert.SerializeObject(albums, Formatting.Indented,
                 new JsonSerializerSettings
                 {
                     ReferenceLoopHandling = ReferenceLoopHandling.Ignore
                 }), $"Album-{dateBackup}.json");
+
+            await Task.WhenAll(task1, task2, task3, task4);
 
             if (isSendMail)
             {

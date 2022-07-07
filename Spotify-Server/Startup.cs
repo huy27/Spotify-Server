@@ -91,6 +91,9 @@ namespace Spotify_Server
 
             });
 
+            //Create default folder
+            services.AddHostedService<StartupService>();
+
             //GraphQL
             services.AddScoped<Query>();
             services.AddScoped<Mutation>();
