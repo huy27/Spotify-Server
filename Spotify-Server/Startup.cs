@@ -91,6 +91,9 @@ namespace Spotify_Server
 
             });
 
+            //Create default folder
+            services.AddHostedService<StartupService>();
+
             //GraphQL
             services.AddScoped<Query>();
             services.AddScoped<Mutation>();
@@ -107,6 +110,7 @@ namespace Spotify_Server
             services.AddTransient<IHangfireService, HangfireService>();
             services.AddTransient<IElasticSearchService, ElasticSearchService>();
             services.AddTransient<IUserService, UserService>();
+            services.AddTransient<ISMSService, SMSService>();
 
             //Redis
             services.AddTransient<ICacheStrigsStack, CacheStrigsStack>();

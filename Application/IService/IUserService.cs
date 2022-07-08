@@ -10,5 +10,6 @@ namespace Application.IService
         Task<string> Login(string username, string password);
         Task<bool> Register(string username, string password, string email);
         Task<bool> RegisterAdmin(string username, string password, string email);
+        Task<bool> ResetPassword(string username, string password);
     }
 }

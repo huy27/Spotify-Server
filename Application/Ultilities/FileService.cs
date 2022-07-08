@@ -13,6 +13,13 @@ namespace Application.Ultilities
 {
     public static class FileService
     {
+        public static void CreateFolderDefault()
+        {
+            string path = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\user-content");
+
+            if (!Directory.Exists(path))
+               Directory.CreateDirectory(path);
+        }
         public static async Task SaveFile(string jsonData, string filename)
         {
             try

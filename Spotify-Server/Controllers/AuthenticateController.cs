@@ -67,5 +67,18 @@ namespace Spotify_Server.Controllers
             return Ok($"Register for {registerModel.UserName} success");
         }
         #endregion
+
+        #region ResetPassword
+        [Authorize(Roles = UserRoles.Admin)]
+        [HttpPut("ResetPassword")]
+        public async Task<ActionResult> ResetPassword(string username, string newPassword)
+        {
+            var result = await _userService.ResetPassword(username, newPassword);
+            if (!result)
+                return BadRequest("Something wrong");
+
+            return Ok();
+        }
+        #endregion
     }
 }
