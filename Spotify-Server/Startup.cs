@@ -110,6 +110,7 @@ namespace Spotify_Server
             services.AddTransient<IHangfireService, HangfireService>();
             services.AddTransient<IElasticSearchService, ElasticSearchService>();
             services.AddTransient<IUserService, UserService>();
+            services.AddTransient<IQueueService, QueueService>();
             services.AddTransient<ISMSService, SMSService>();
 
             //Redis

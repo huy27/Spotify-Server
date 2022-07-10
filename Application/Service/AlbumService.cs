@@ -4,6 +4,7 @@ using Data.Entities;
 using Data.Models;
 using Data.Models.Album;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,10 +16,12 @@ namespace Application.Service
     public class AlbumService : IAlbumService
     {
         private readonly SpotifyContext _context;
+        private readonly IQueueService _queueService;
 
-        public AlbumService(SpotifyContext context)
+        public AlbumService(SpotifyContext context, IQueueService queueService)
         {
             _context = context;
+            _queueService = queueService;
         }
 
         public async Task<int> Create(CreateAlbumModel request)
@@ -33,7 +36,7 @@ namespace Application.Service
             };
             await _context.Album.AddAsync(album);
             await _context.SaveChangesAsync();
-
+            await _queueService.SenderAsync(JsonConvert.SerializeObject(album));
             return album.Id;
         }
 

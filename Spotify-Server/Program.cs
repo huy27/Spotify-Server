@@ -1,3 +1,4 @@
+using Application.Service;
 using Application.Ultilities;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +18,8 @@ namespace Spotify_Server
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                }).ConfigureServices(services => services.AddHostedService<KafkaConsumer>());
+                }).ConfigureServices(services => {
+                    services.AddHostedService<MessageHandler>();
+                });
     }
 }
