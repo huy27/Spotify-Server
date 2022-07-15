@@ -7,10 +7,10 @@ hangfire: https://bsite.net/huy27297/hangfire
 graphql: https://bsite.net/huy27297/graphql/
 
 Technology:
-  👉Entity framework
-  👉Identity
-  👉ElasticSearch
-  👉Hangfire
-  👉Redis
-  👉Kafka
+  👉Entity framework <br/>
+  👉Identity <br/>
+  👉ElasticSearch <br/>
+  👉Hangfire <br/>
+  👉Redis <br/>
+  👉Kafka <br/>
   👉SQL Server
