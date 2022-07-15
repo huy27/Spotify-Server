@@ -6,7 +6,7 @@ hangfire: https://bsite.net/huy27297/hangfire
 
 graphql: https://bsite.net/huy27297/graphql/
 
-Technology:
+Technology: <br/>
   👉Entity framework <br/>
   👉Identity <br/>
   👉ElasticSearch <br/>
