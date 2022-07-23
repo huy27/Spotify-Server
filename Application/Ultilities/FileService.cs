@@ -66,7 +66,7 @@ namespace Application.Ultilities
                     }
                     break;
                 case EnumFile.Music:
-                    csv.AppendLine(string.Join(",", "Id", "Name", "Author", "Url", "Lyric", "CreateDate"));
+                    csv.AppendLine(string.Join(",", "Id", "Name", "Author", "Url", "Image", "Lyric", "CreateDate"));
 
                     foreach (T item in listData)
                     {
@@ -75,17 +75,16 @@ namespace Application.Ultilities
                         var name = HandleCommaCsv(type.GetProperty("Name").GetValue(item).ToString());
                         var author = HandleCommaCsv(type.GetProperty("Author").GetValue(item).ToString());
                         var url = HandleCommaCsv(type.GetProperty("Url").GetValue(item).ToString());
+                        var image = type.GetProperty("Image").GetValue(item)?.ToString();
                         var lyric = HandleCommaCsv(type.GetProperty("Lyric").GetValue(item).ToString());
                         var createDate = type.GetProperty("CreateDate").GetValue(item)?.ToString();
 
-                        csv.AppendLine(string.Join(",", id, name, author, url, lyric, createDate));
+                        csv.AppendLine(string.Join(",", id, name, author, url, image, lyric, createDate));
                     }
                     break;
                 default:
                     break;
             }
-
-            csv.AppendLine(String.Join(",", "Total", listData.Count));
 
             await File.WriteAllTextAsync(filePath, csv.ToString(), Encoding.UTF8);
         }

@@ -110,7 +110,6 @@ namespace Spotify_Server
             services.AddTransient<IHangfireService, HangfireService>();
             services.AddTransient<IElasticSearchService, ElasticSearchService>();
             services.AddTransient<IUserService, UserService>();
-            services.AddTransient<ISMSService, SMSService>();
 
             //Redis
             services.AddTransient<ICacheStrigsStack, CacheStrigsStack>();
@@ -236,6 +235,16 @@ namespace Spotify_Server
 
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.Use(async (context, next) =>
+            {
+                //security code 
+                context.Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+                context.Response.Headers["Expires"] = "-1";
+                context.Response.Headers["Pragma"] = "no-cache";
+
+                await next();
+            });
 
             app.UseEndpoints(endpoints =>
             {

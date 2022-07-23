@@ -4,6 +4,7 @@ using Data.Enums;
 using Data.Models.Song;
 using Hangfire;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -149,6 +150,16 @@ namespace Spotify_Server.Controllers
         }
         #endregion
 
+        #region ImportCsv
+        [Authorize(Roles = UserRoles.Admin)]
+        [Consumes("multipart/form-data")]
+        [HttpPost("ImportCsv")]
+        public async Task<ActionResult> ImportCsv(IFormFile file)
+        {
+            await _musicService.ImportCsv(file);
+            return Ok();
+        }
+        #endregion
 
         private string GetFilePath(TypeExportFile typeExportFile)
         {

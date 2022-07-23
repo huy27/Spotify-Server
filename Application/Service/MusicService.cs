@@ -1,12 +1,16 @@
 ﻿using Application.IService;
 using Application.Ultilities;
+using CsvHelper;
 using Data.Entities;
 using Data.Models;
 using Data.Models.Song;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Nest;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -147,6 +151,62 @@ namespace Application.Service
             var result = await _context.SaveChangesAsync();
             await KafkaProducerService.SendMusicsAsync(song);
             return result;
+        }
+
+        public async Task ImportCsv(IFormFile file)
+        {
+            string folderPath = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\Files");
+            try
+            {
+                if (!Directory.Exists(folderPath))
+                    Directory.CreateDirectory(folderPath);
+
+                var fileExtension = Path.GetExtension(file.FileName);
+                var fileName = Guid.NewGuid().ToString() + fileExtension;
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\Files", fileName);
+                using (FileStream fs = System.IO.File.Create(filePath))
+                {
+                    file.CopyTo(fs);
+                }
+                if (fileExtension == ".csv")
+                {
+                    using (var reader = new StreamReader(filePath))
+                    using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+                    {
+                        var records = csv.GetRecords<CreateSongModel>().ToList();
+                        var songs = new List<Song>();
+                        foreach (var record in records)
+                        {
+
+                            if (string.IsNullOrEmpty(record.Name))
+                            {
+                                continue;
+                            }
+                            songs.Add(new Song
+                            {
+                                Name = record.Name,
+                                Author = record.Author,
+                                CreateDate = DateTime.UtcNow,
+                                Image = record.Image,
+                                Lyric = record.Lyric,
+                                Url = record.Url,
+                                IsActive = true,
+                                AlbumId = 2
+                            });
+                        }
+                        await _context.Song.AddRangeAsync(songs);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            finally
+            {
+                Directory.Delete(folderPath, recursive: true);
+            }
         }
     }
 }

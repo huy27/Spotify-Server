@@ -1,5 +1,6 @@
 ﻿using Data.Models;
 using Data.Models.Song;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -16,6 +17,7 @@ namespace Application.IService
         Task<int> Create(int albumId, CreateSongModel request);
         Task<int> Update(int id, bool isActive);
         Task<int> Update(int id, int albumId, UpdateSongModel request);
+        Task ImportCsv(IFormFile file);
 
     }
 }
