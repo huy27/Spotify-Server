@@ -1,10 +1,10 @@
 🙋‍♂️ Spotify-Server
 
-swagger: https://bsite.net/huy27297/swagger/index.html
+swagger: https://spotify97.azurewebsites.net/swagger/index.html
 
-hangfire: https://bsite.net/huy27297/hangfire
+hangfire: https://spotify97.azurewebsites.net/hangfire
 
-graphql: https://bsite.net/huy27297/graphql/
+graphql: https://spotify97.azurewebsites.net/graphql/
 
 Technology: <br/>
   👉Entity framework <br/>
