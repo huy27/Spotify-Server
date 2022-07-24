@@ -34,9 +34,10 @@ namespace Spotify_Server.Controllers
         #region GetById
         [AllowAnonymous]
         [HttpGet("{id}")]
-        public string Get(int id)
+        public async Task<ActionResult> GetById(int id)
         {
-            return "value";
+            var result = await _albumService.GetById(id);
+            return Ok(result);
         }
         #endregion
 

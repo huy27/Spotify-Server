@@ -7,7 +7,7 @@ namespace Application.Ultilities
         static HttpClient _client = new HttpClient();
         public static void Ping()
         {
-            _client.GetAsync("https://bsite.net/huy27297/hangfire");
+            _client.GetAsync("https://spotify97.azurewebsites.net/hangfire");
         }
     }
 }

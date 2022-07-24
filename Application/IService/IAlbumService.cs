@@ -8,6 +8,7 @@ namespace Application.IService
     public interface IAlbumService
     {
         Task<List<AlbumModel>> Get();
+        Task<AlbumModel> GetById(int id);
         Task<int> Create(CreateAlbumModel request);
         Task<int> Update(int id, UpdateAlbumModel request);
         Task<int> Update(int id, bool isActive);

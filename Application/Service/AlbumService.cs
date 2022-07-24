@@ -52,6 +52,20 @@ namespace Application.Service
             return albums;
         }
 
+        public async Task<AlbumModel> GetById(int id)
+        {
+            var album = await _context.Album.FirstOrDefaultAsync(x => x.Id == id);
+            var albumModel = new AlbumModel
+            {
+                Id = album.Id,
+                Name = album.Name,
+                Description = album.Description,
+                BackgroundImageUrl = album.BackgroundImageUrl,
+                CreatedAt = TimeUltility.CalculateRelativeTime(album.CreatedAt)
+            };
+            return albumModel;
+        }
+
         public async Task<int> Update(int id, UpdateAlbumModel request)
         {
             var album = await _context.Album.FirstOrDefaultAsync(x => x.Id == id);
