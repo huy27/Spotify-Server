@@ -2,6 +2,7 @@
 using Application.IService;
 using Application.Service;
 using Application.Ultilities;
+using AspNetCoreRateLimit;
 using Data.Entities;
 using Data.Models.Album;
 using Data.Models.Mail;
@@ -90,6 +91,55 @@ namespace Spotify_Server
                 options.User.RequireUniqueEmail = true;  // Email là duy nhất
 
             });
+
+            // Rate limiting
+            services.AddMemoryCache();
+            services.Configure<IpRateLimitOptions>(options =>
+            {
+                options.EnableEndpointRateLimiting = true;
+                options.StackBlockedRequests = false;
+                options.HttpStatusCode = 429;
+                options.RealIpHeader = "X-Real-IP";
+                options.ClientIdHeader = "X-ClientId";
+                options.GeneralRules = new List<RateLimitRule>
+                {
+                    new RateLimitRule
+                    {
+                        Endpoint = "POST:/api/Mail",
+                        Period = "24h",
+                        Limit = 10,
+                    },
+                    new RateLimitRule
+                    {
+                        Endpoint = "*",
+                        Period = "1s",
+                        Limit = 2,
+                    },
+                    new RateLimitRule
+                    {
+                        Endpoint = "*",
+                        Period = "15m",
+                        Limit = 100,
+                    },
+                    new RateLimitRule
+                    {
+                        Endpoint = "*",
+                        Period = "12h",
+                        Limit = 1000,
+                    },
+                    new RateLimitRule
+                    {
+                        Endpoint = "*",
+                        Period = "7d",
+                        Limit = 10000,
+                    }
+                };
+            });
+            services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
+            services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
+            services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+            services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrategy>();
+            services.AddInMemoryRateLimiting();
 
             //Create default folder
             services.AddHostedService<StartupService>();
@@ -230,6 +280,8 @@ namespace Spotify_Server
             RecurringJob.AddOrUpdate<IHangfireService>("DeleteOldFile", x => x.DeleteOldFile(), "0 0 * * SUN,TUE,FRI", TimeZoneInfo.FindSystemTimeZoneById(Configuration["Timezone"]));
 
             app.UseCors("spotify");
+
+            app.UseIpRateLimiting();
 
             app.UseRouting();
 
