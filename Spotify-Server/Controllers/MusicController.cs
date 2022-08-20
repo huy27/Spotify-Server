@@ -161,6 +161,16 @@ namespace Spotify_Server.Controllers
         }
         #endregion
 
+        #region ConvertToMusic
+        [Authorize(Roles = UserRoles.Admin)]
+        [HttpPost("ConvertToMusic")]
+        public async Task<ActionResult> ConvertToMusic(string url)
+        {
+            await _musicService.ConvertToSong(url);
+            return Ok("Convert success");
+        }
+        #endregion
+
         private string GetFilePath(TypeExportFile typeExportFile)
         {
             var filePath = "";

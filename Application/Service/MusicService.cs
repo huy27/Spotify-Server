@@ -4,6 +4,8 @@ using CsvHelper;
 using Data.Entities;
 using Data.Models;
 using Data.Models.Song;
+using MediaToolkit;
+using MediaToolkit.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Nest;
@@ -14,6 +16,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VideoLibrary;
 
 namespace Application.Service
 {
@@ -52,9 +55,9 @@ namespace Application.Service
 
         public async Task<List<SongModel>> GetByCondition(string name)
         {
-            var songs = await _context.Song.Where(x => x.Name.Contains(name) 
-                                                || x.Author.Contains(name) 
-                                                && x.IsActive 
+            var songs = await _context.Song.Where(x => x.Name.Contains(name)
+                                                || x.Author.Contains(name)
+                                                && x.IsActive
                                                 && x.Album.IsActive)
                 .Select(x => new SongModel
                 {
@@ -207,6 +210,35 @@ namespace Application.Service
             {
                 Directory.Delete(folderPath, recursive: true);
             }
+        }
+
+        public async Task ConvertToSong(string url)
+        {
+            try
+            {
+                var source = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\Music\");
+                var youtube = YouTube.Default;
+                var video = await youtube.GetVideoAsync(url);
+                File.WriteAllBytes(source + video.FullName, video.GetBytes());
+
+                var inputFile = new MediaFile { Filename = source + video.FullName };
+                var outputFile = new MediaFile { Filename = $"{source + video.FullName.Replace(".mp4", "")}.mp3" };
+
+                using (var engine = new Engine())
+                {
+                    engine.GetMetadata(inputFile);
+
+                    engine.Convert(inputFile, outputFile);
+                }
+
+                File.Delete(source + video.FullName);
+            }
+            catch (Exception e)
+            {
+
+                throw;
+            }
+            
         }
     }
 }

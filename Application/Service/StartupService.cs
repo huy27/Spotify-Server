@@ -19,6 +19,7 @@ namespace Application.Service
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             FileService.CreateFolderDefault();
+            FileService.CreateFolderMusic();
             await Task.CompletedTask;
         }
 
