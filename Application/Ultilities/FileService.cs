@@ -20,6 +20,13 @@ namespace Application.Ultilities
             if (!Directory.Exists(path))
                Directory.CreateDirectory(path);
         }
+        public static void CreateFolderMusic()
+        {
+            string path = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\Music");
+
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
+        }
         public static async Task SaveFile(string jsonData, string filename)
         {
             try
