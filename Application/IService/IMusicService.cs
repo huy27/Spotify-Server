@@ -18,6 +18,6 @@ namespace Application.IService
         Task<int> Update(int id, bool isActive);
         Task<int> Update(int id, int albumId, UpdateSongModel request);
         Task ImportCsv(IFormFile file);
-        Task ConvertToSong(string url);
+        Task<string> DownloadFromYoutube(string url);
     }
 }

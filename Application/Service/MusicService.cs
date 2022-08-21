@@ -4,8 +4,6 @@ using CsvHelper;
 using Data.Entities;
 using Data.Models;
 using Data.Models.Song;
-using MediaToolkit;
-using MediaToolkit.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Nest;
@@ -212,33 +210,24 @@ namespace Application.Service
             }
         }
 
-        public async Task ConvertToSong(string url)
+        public async Task<string> DownloadFromYoutube(string url)
         {
             try
             {
                 var source = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\Music\");
                 var youtube = YouTube.Default;
+
                 var video = await youtube.GetVideoAsync(url);
-                File.WriteAllBytes(source + video.FullName, video.GetBytes());
-
-                var inputFile = new MediaFile { Filename = source + video.FullName };
-                var outputFile = new MediaFile { Filename = $"{source + video.FullName.Replace(".mp4", "")}.mp3" };
-
-                using (var engine = new Engine())
-                {
-                    engine.GetMetadata(inputFile);
-
-                    engine.Convert(inputFile, outputFile);
-                }
-
-                File.Delete(source + video.FullName);
+                var idVideo = Guid.NewGuid().ToString();
+                await File.WriteAllBytesAsync($"{source}{idVideo}.mp4", await video.GetBytesAsync());
+                return idVideo;
             }
             catch (Exception e)
             {
 
                 throw;
             }
-            
+
         }
     }
 }
