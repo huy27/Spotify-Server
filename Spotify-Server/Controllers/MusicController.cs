@@ -8,6 +8,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.IO;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -161,13 +165,29 @@ namespace Spotify_Server.Controllers
         }
         #endregion
 
-        #region ConvertToMusic
+        #region DownloadVideoFromYoutube
         [Authorize(Roles = UserRoles.Admin)]
-        [HttpPost("ConvertToMusic")]
-        public async Task<ActionResult> ConvertToMusic(string url)
+        [HttpPost("DownloadVideoFromYoutube")]
+        public async Task<ActionResult> DownloadFromYoutube(string url)
         {
-            await _musicService.ConvertToSong(url);
-            return Ok("Convert success");
+            var result = await _musicService.DownloadFromYoutube(url);
+            return Ok($"Video Id : {result}");
+        }
+        #endregion
+
+        #region GetVideo
+        [AllowAnonymous]
+        [HttpGet("Video/{id}")]
+        public async Task<ActionResult> GetVideo(string id = "")
+        {
+            var source = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\Music\", $"{id}.mp4");
+
+            if (!System.IO.File.Exists(source))
+                return BadRequest("File not exist");
+
+            var fileData = await System.IO.File.ReadAllBytesAsync(source);
+            var file = File(fileData, "application/force-download", $"{id}.mp4");
+            return file;
         }
         #endregion
 
