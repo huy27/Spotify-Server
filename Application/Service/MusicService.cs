@@ -4,6 +4,8 @@ using CsvHelper;
 using Data.Entities;
 using Data.Models;
 using Data.Models.Song;
+using MediaToolkit;
+using MediaToolkit.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Nest;
@@ -215,11 +217,24 @@ namespace Application.Service
             try
             {
                 var source = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\Music\");
+                var ffMpath = Path.Combine(Directory.GetCurrentDirectory(), @"bin\ffmpeg.exe");
                 var youtube = YouTube.Default;
 
                 var video = await youtube.GetVideoAsync(url);
                 var idVideo = Guid.NewGuid().ToString();
                 await File.WriteAllBytesAsync($"{source}{idVideo}.mp4", await video.GetBytesAsync());
+
+                var inputFile = new MediaFile { Filename = $"{source}{idVideo}.mp4" };
+                var outputFile = new MediaFile { Filename = $"{source}{idVideo}.mp3" };
+
+                using (var engine = new Engine(ffMpath))
+                {
+                    engine.GetMetadata(inputFile);
+
+                    engine.Convert(inputFile, outputFile);
+                }
+
+                File.Delete($"{source}{idVideo}.mp4");
                 return idVideo;
             }
             catch (Exception e)

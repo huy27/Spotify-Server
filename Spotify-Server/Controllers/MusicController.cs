@@ -180,13 +180,13 @@ namespace Spotify_Server.Controllers
         [HttpGet("Video/{id}")]
         public async Task<ActionResult> GetVideo(string id = "")
         {
-            var source = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\Music\", $"{id}.mp4");
+            var source = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\Music\", $"{id}.mp3");
 
             if (!System.IO.File.Exists(source))
                 return BadRequest("File not exist");
 
             var fileData = await System.IO.File.ReadAllBytesAsync(source);
-            var file = File(fileData, "application/force-download", $"{id}.mp4");
+            var file = File(fileData, "audio/mpeg", $"{id}.mp3", enableRangeProcessing: true);
             return file;
         }
         #endregion
