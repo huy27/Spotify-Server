@@ -214,16 +214,17 @@ namespace Application.Service
 
         public async Task<string> DownloadFromYoutube(string url)
         {
+
+            var source = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\Music\");
+            var ffMpath = Path.Combine(Directory.GetCurrentDirectory(), @"bin\ffmpeg.exe");
+            var youtube = YouTube.Default;
+
+            var video = await youtube.GetVideoAsync(url);
+            var idVideo = Guid.NewGuid().ToString();
+            await File.WriteAllBytesAsync($"{source}{idVideo}.mp4", await video.GetBytesAsync());
+
             try
             {
-                var source = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\Music\");
-                var ffMpath = Path.Combine(Directory.GetCurrentDirectory(), @"bin\ffmpeg.exe");
-                var youtube = YouTube.Default;
-
-                var video = await youtube.GetVideoAsync(url);
-                var idVideo = Guid.NewGuid().ToString();
-                await File.WriteAllBytesAsync($"{source}{idVideo}.mp4", await video.GetBytesAsync());
-
                 var inputFile = new MediaFile { Filename = $"{source}{idVideo}.mp4" };
                 var outputFile = new MediaFile { Filename = $"{source}{idVideo}.mp3" };
 
@@ -235,14 +236,10 @@ namespace Application.Service
                 }
 
                 File.Delete($"{source}{idVideo}.mp4");
-                return idVideo;
             }
-            catch (Exception e)
-            {
-
-                throw;
-            }
-
+            catch (Exception)
+            { }
+            return idVideo;
         }
     }
 }
