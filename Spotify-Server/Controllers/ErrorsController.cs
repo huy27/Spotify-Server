@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Sentry;
 
 namespace Spotify_Server.Controllers
 {
@@ -22,6 +23,7 @@ namespace Spotify_Server.Controllers
         {
             var context = HttpContext.Features.Get<IExceptionHandlerFeature>();
             var exception = context.Error;
+            SentrySdk.CaptureMessage(exception.Message, SentryLevel.Error);
 
             _mailService.SendMail("huy27297@gmail.com",
                 $"Type: {exception.GetType().FullName}" + $"<br/>" +
