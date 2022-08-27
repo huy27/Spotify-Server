@@ -16,6 +16,7 @@ namespace Spotify_Server
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
+                    webBuilder.UseSentry();
                     webBuilder.UseStartup<Startup>();
                 }).ConfigureServices(services => services.AddHostedService<KafkaConsumer>());
     }
